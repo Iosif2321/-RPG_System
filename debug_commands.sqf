@@ -76,7 +76,7 @@ hint str format ["Игроков в базе: %1", RPG_DB_PLAYERS size()];
 hint str (profileNamespace getVariable "RPG_System_PlayerData");
 
 // ============================================
-| КОНФИГУРАЦИЯ
+// КОНФИГУРАЦИЯ
 // ============================================
 
 // Показать конфигурацию XP

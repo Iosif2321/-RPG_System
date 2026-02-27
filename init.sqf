@@ -25,7 +25,7 @@ diag_log "[RPG] Initializing...";
 diag_log "[RPG] ========================================";
 
 // Ждем пока загрузятся аддоны
-uiSleep 1;
+sleep 1; // uiSleep — клиентская команда; на сервере используем sleep
 
 // Инициализация базы данных
 diag_log "[RPG] Initializing database...";
@@ -47,36 +47,18 @@ diag_log "[RPG] Initializing event handlers...";
 [] call compile preprocessFileLineNumbers "\RPG_System\scripts\events\fn_initEventHandlers.sqf";
 [] call RPG_fnc_initEventHandlers;
 
-// Инициализация UI
-diag_log "[RPG] Initializing UI system...";
+// Инициализация UI — функции компилируются, но RPG_fnc_initUI НЕ вызывается на сервере
+// (UI диалоги и обработчики нужны только на клиенте)
+diag_log "[RPG] Compiling UI functions...";
 [] call compile preprocessFileLineNumbers "\RPG_System\scripts\ui\fn_initUI.sqf";
-[] call RPG_fnc_initUI;
 
 // Интеграция с ACE (если доступен)
 diag_log "[RPG] Initializing ACE integration...";
 [] call compile preprocessFileLineNumbers "\RPG_System\scripts\ace\fn_initACEIntegration.sqf";
 [] call RPG_fnc_initACEIntegration;
 
-// Добавляем команду чата для открытия меню
-if (isNil "RPG_ChatCommandHandler") then {
-    RPG_ChatCommandHandler = true;
-    
-    [] spawn {
-        while {true} do {
-            uiSleep 2;
-            
-            {
-                if (isPlayer _x) then {
-                    private _chatMessage = _x getVariable ["RPG_LastChatMessage", ""];
-                    private _currentMessage = _x getVariable ["RPG_CurrentChatMessage", ""];
-                    
-                    // Простая проверка команды /rpg
-                    // Более сложная реализация требует перехвата чата
-                };
-            } forEach allPlayers;
-        };
-    };
-};
+// Перехват команды /rpg через чат не реализован (нет API для чтения чата в ARMA 3)
+// Для открытия меню используется: колесо действий или клавиша F7 (initPlayerLocal.sqf)
 
 // Публикуем функции для удаленного вызова
 RPG_System_Initialized = true;
