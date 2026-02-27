@@ -1,0 +1,33 @@
+# ARMA 3 PBO Files
+*.pbo
+
+# Backup Files
+*.bak
+*.backup
+
+# Log Files
+*.rpt
+*.log
+
+# Temporary Files
+*.tmp
+*.temp
+
+# OS Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor Files
+*.sqm~
+*.sqf~
+config.cpp~
+
+# Build artifacts
+build/
+release/
+*.zip
+*.rar
+
+# Private profile data (optional - uncomment if needed)
+# *.vars

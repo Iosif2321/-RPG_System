@@ -1,0 +1,9 @@
+name = "RPG System";
+picture = "rpg_logo_ca.paa";
+actionName = "GitHub";
+action = "https://github.com/your-repo/rpg-system";
+description = "Server-side RPG system with XP, levels, and database storage";
+author = "Server Admin";
+authorID = "76561198000000000";
+overview = "Серверный RPG мод с системой опыта, уровней и базой данных на hash map. Отслеживает действия игроков: ACE медицина, ремонт, убийства, и начисляет XP.";
+overviewPicture = "rpg_logo_ca.paa";
