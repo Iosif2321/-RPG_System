@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sort:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(\"/c/Program Files \\(x86\\)/Steam/steamapps/common/Arma 3 Tools/AddonBuilder/AddonBuilder.exe\" \"/c/Users/Ded/Documents/Projects/ARMA 3 Scripts/@RPG_System/source/RPG_System\" \"/c/Users/Ded/Documents/Projects/ARMA 3 Scripts/@RPG_System/addons\" -clear -packonly)",
+      "Bash(echo:*)",
+      "Bash(cmd.exe /c:*)",
+      "Bash(powershell.exe -Command \"& ''C:\\\\Program Files \\(x86\\)\\\\Steam\\\\steamapps\\\\common\\\\Arma 3 Tools\\\\AddonBuilder\\\\AddonBuilder.exe'' ''C:\\\\Users\\\\Ded\\\\Documents\\\\Projects\\\\ARMA 3 Scripts\\\\@RPG_System\\\\source\\\\RPG_System'' ''C:\\\\Users\\\\Ded\\\\Documents\\\\Projects\\\\ARMA 3 Scripts\\\\@RPG_System\\\\addons'' -clear -packonly; exit $LASTEXITCODE\")",
+      "Bash(python -m sqf_validator:*)"
+    ]
+  }
+}
