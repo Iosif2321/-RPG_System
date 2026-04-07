@@ -17,8 +17,8 @@ if (isNil "_skills") then {
     _data set ["skills", _skills];
 };
 
-// Ограничиваем от 0 до 10
-_value = [_value, 0, 10] call BIS_fnc_clamp;
+// Без лимита — навыки растут бесконечно
+_value = _value max 0;
 
 _skills set [_skillType, _value];
 [_playerID, _data] call RPG_fnc_setPlayerData;

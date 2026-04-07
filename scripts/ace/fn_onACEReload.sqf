@@ -9,7 +9,7 @@ if (!isServer) exitWith {0};
 if (isNil "_supplier" || {isNull _supplier} || {!isPlayer _supplier}) exitWith {0};
 
 // XP за разные действия
-private _xpAmount = switch (toLower (_action param ["", ""])) do {
+private _xpAmount = switch (toLower _action) do {
     case "rearm": {40};
     case "refuel": {30};
     case "repair": {50};

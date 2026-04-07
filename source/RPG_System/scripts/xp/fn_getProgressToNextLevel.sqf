@@ -27,4 +27,4 @@ if (_nextLevelXP <= _prevLevelXP) exitWith {1};
 private _progress = (_currentXP - _prevLevelXP) / (_nextLevelXP - _prevLevelXP);
 
 // Ограничиваем от 0 до 1
-progressIntersection [0, 1, _progress]
+(_progress max 0) min 1

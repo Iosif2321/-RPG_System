@@ -19,5 +19,8 @@ _stats set ["deaths", _deaths + 1];
 
 // Если убийца игрок - начисляем ему XP
 if (!isNil "_killer" && {isPlayer _killer} && {_killer != _victim}) then {
-    [_killer, 100, "Игрок"] call RPG_fnc_addXP;
+    private _baseXP = 100;
+    private _bonus = [_killer, "reflexes"] call RPG_fnc_getSkillBonus;
+    private _xpAmount = floor (_baseXP * (1 + _bonus));
+    [_killer, _xpAmount, "Игрок"] call RPG_fnc_addXP;
 };

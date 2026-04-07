@@ -24,7 +24,7 @@ RPG_fnc_initDatabase = {
     
     if (_savedData isEqualType createHashMap) then {
         RPG_DB_PLAYERS = _savedData;
-        diag_log format ["[RPG] Database loaded with %1 players", RPG_DB_PLAYERS size()];
+        diag_log format ["[RPG] Database loaded with %1 players", count RPG_DB_PLAYERS];
     } else {
         // Конвертируем из старого формата (array) если нужно
         private _oldData = RPG_PROFILE_NAMESPACE getVariable [RPG_SAVE_KEY, []];
@@ -36,7 +36,7 @@ RPG_fnc_initDatabase = {
                     RPG_DB_PLAYERS set [_playerID, _playerData];
                 };
             } forEach _oldData;
-            diag_log format ["[RPG] Converted old format database with %1 players", RPG_DB_PLAYERS size()];
+            diag_log format ["[RPG] Converted old format database with %1 players", count RPG_DB_PLAYERS];
         };
         
         // Сохраняем в новом формате
@@ -75,7 +75,7 @@ RPG_fnc_startAutoSave = {
 RPG_fnc_getPlayerData = {
     params ["_playerID"];
     
-    if (RPG_DB_PLAYERS containsKey _playerID) then {
+    if (_playerID in RPG_DB_PLAYERS) then {
         RPG_DB_PLAYERS get _playerID
     } else {
         // Создаем новые данные для игрока

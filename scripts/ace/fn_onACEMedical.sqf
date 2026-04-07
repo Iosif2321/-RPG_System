@@ -10,7 +10,7 @@ if (!_success) exitWith {0};
 if (isNil "_healer" || {isNull _healer} || {!isPlayer _healer}) exitWith {0};
 
 // XP за разные действия
-private _xpAmount = switch (toLower (_action param ["", ""])) do {
+private _xpAmount = switch (toLower _action) do {
     case "bandage": {15};
     case "tourniquet": {20};
     case "inject": {30};

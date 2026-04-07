@@ -17,10 +17,11 @@ private _xpAmount = 0;
 private _source = "";
 
 if (_killed isKindOf "Man") then {
-    // Убийство пехоты — XP только за врагов (не союзников)
-    // side _killed != side _killer исключает friendly fire
     if (side _killed != side _killer && {!(isPlayer _killed)}) then {
-        _xpAmount = RPG_XP_CONFIG getOrDefault ["kill_infantry", 50];
+        private _baseXP = RPG_XP_CONFIG getOrDefault ["kill_infantry", 50];
+        // Применяем бонус навыка reflexes
+        private _bonus = [_killer, "reflexes"] call RPG_fnc_getSkillBonus;
+        _xpAmount = floor (_baseXP * (1 + _bonus));
         _source = "Убийство";
 
         // Обновляем статистику
@@ -33,8 +34,8 @@ if (_killed isKindOf "Man") then {
 
 if (_xpAmount > 0) then {
     [_killer, _xpAmount, _source] call RPG_fnc_addXP;
-    
-    diag_log format ["[RPG] %1 killed enemy for %2 XP", name _killer, _xpAmount];
+
+    diag_log format ["[RPG] %1 killed enemy for %2 XP (bonus: %.0f%%)", name _killer, _xpAmount, _bonus * 100];
 };
 
 _xpAmount

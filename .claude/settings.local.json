@@ -1,14 +1,48 @@
 {
+  "env": {
+    "ANTHROPIC_BASE_URL": "https://openrouter.ai/api",
+    "ANTHROPIC_AUTH_TOKEN": "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",
+    "ANTHROPIC_MODEL": "qwen/qwen3.6-plus:free"
+  },
   "permissions": {
     "allow": [
-      "Bash(sort:*)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(\"/c/Program Files \\(x86\\)/Steam/steamapps/common/Arma 3 Tools/AddonBuilder/AddonBuilder.exe\" \"/c/Users/Ded/Documents/Projects/ARMA 3 Scripts/@RPG_System/source/RPG_System\" \"/c/Users/Ded/Documents/Projects/ARMA 3 Scripts/@RPG_System/addons\" -clear -packonly)",
-      "Bash(echo:*)",
-      "Bash(cmd.exe /c:*)",
-      "Bash(powershell.exe -Command \"& ''C:\\\\Program Files \\(x86\\)\\\\Steam\\\\steamapps\\\\common\\\\Arma 3 Tools\\\\AddonBuilder\\\\AddonBuilder.exe'' ''C:\\\\Users\\\\Ded\\\\Documents\\\\Projects\\\\ARMA 3 Scripts\\\\@RPG_System\\\\source\\\\RPG_System'' ''C:\\\\Users\\\\Ded\\\\Documents\\\\Projects\\\\ARMA 3 Scripts\\\\@RPG_System\\\\addons'' -clear -packonly; exit $LASTEXITCODE\")",
-      "Bash(python -m sqf_validator:*)"
+      "Read(//c/tmp/**)",
+      "Bash(gh repo:*)",
+      "WebFetch(domain:github.com)",
+      "WebSearch",
+      "Bash(python3 -m src.main summary)",
+      "Bash(cargo check:*)",
+      "Bash(python3 -m src.main commands --limit 15)",
+      "Bash(python3 -m src.main route \"прочитай readme\")",
+      "Bash(python3 -m src.main route \"поищи функцию grep\")",
+      "Bash(python3 -m src.main parity-audit)",
+      "Bash(python3 -m unittest discover -s tests -v)",
+      "Bash(rmdir claw-code:*)",
+      "Bash(rm -rf claw-code)",
+      "Bash(cmd.exe /c \"rmdir /s /q C:\\\\Users\\\\Ded\\\\AppData\\\\Local\\\\Temp\\\\claw-code\")",
+      "Bash(lspci)",
+      "Bash(cmd.exe /c \"wmic cpu get name 2>nul && wmic memorychip get capacity,speed 2>nul && wmic diskdrive get model,size 2>nul && wmic path win32_videocontroller get name,adapterram 2>nul\")",
+      "Bash(grep -v \"^$\")",
+      "Bash(cmd.exe /c \"powershell -command \\\\\"Get-CimInstance Win32_Processor | Select-Object Name, NumberOfCores, NumberOfLogicalProcessors; Get-CimInstance Win32_PhysicalMemory | Select-Object Capacity, Speed; Get-CimInstance Win32_DiskDrive | Select-Object Model, Size; Get-CimInstance Win32_VideoController | Select-Object Name, AdapterRAM\\\\\"\" 2>&1)",
+      "Bash(powershell.exe -Command \"Get-CimInstance Win32_Processor | Select-Object -ExpandProperty Name\" 2>&1)",
+      "Bash(powershell.exe -Command \"Get-CimInstance Win32_PhysicalMemory | ForEach-Object { '[RAM] ' + [math]::Round\\($_.Capacity/1GB\\) + ' GB @ ' + $_.Speed + ' MHz' }\" 2>&1)",
+      "Bash(powershell.exe -Command \"Get-CimInstance Win32_PhysicalMemory | Select-Object @{N='GB';E={[math]::Round\\($_.Capacity/1GB\\)}}, Speed\" 2>&1)",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File /tmp/hwininfo.ps1 2>&1)",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File \"C:\\\\Users\\\\Ded\\\\AppData\\\\Local\\\\Temp\\\\hwininfo.ps1\" 2>&1)",
+      "Bash(powershell.exe -Command \"\\(Get-WmiObject Win32_PhysicalMemory\\) | ForEach-Object { 'Slot: ' + $_.DeviceLocator; 'Manufacturer: ' + $_.Manufacturer; 'PartNumber: ' + $_.PartNumber; 'Speed: ' + $_.Speed + ' MHz'; 'ConfiguredClockSpeed: ' + $_.ConfiguredClockSpeed + ' MHz'; 'Capacity: ' + [math]::Round\\($_.Capacity/1GB\\) + ' GB' }\" 2>&1)",
+      "Bash(cmd.exe /c \"powershell -ExecutionPolicy Bypass -File %TEMP%\\\\spdtiming.ps1\" 2>&1)",
+      "Bash(cmd.exe /c \"powershell -ExecutionPolicy Bypass -File \\\\\"C:\\\\Users\\\\Ded\\\\AppData\\\\Local\\\\Temp\\\\spdtiming.ps1\\\\\"\" 2>&1)",
+      "Bash(cmd.exe /c \"C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe -ExecutionPolicy Bypass -File C:\\\\Users\\\\Ded\\\\AppData\\\\Local\\\\Temp\\\\spdtiming.ps1\" 2>&1)",
+      "Bash(cmd.exe /c \"C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe -ExecutionPolicy Bypass -File C:\\\\Users\\\\Ded\\\\AppData\\\\Local\\\\Temp\\\\spdtiming.ps1 && type C:\\\\Users\\\\Ded\\\\AppData\\\\Local\\\\Temp\\\\ramresult.txt\")",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File \"C:\\\\Users\\\\Ded\\\\AppData\\\\Local\\\\Temp\\\\spdtiming.ps1\" 2>&1)",
+      "Bash(cmd.exe /c \"C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe -ExecutionPolicy Bypass -File C:\\\\Users\\\\Ded\\\\AppData\\\\Local\\\\Temp\\\\spdtiming.ps1\")",
+      "Bash(python3:*)",
+      "Bash(node:*)",
+      "Bash(awk '/<script>/{found=1; next} /<\\\\/script>/{found=0} found' ui_preview.html)",
+      "Read(//tmp/**)",
+      "Bash(awk 'NR>=266 && NR<=280' ui_preview.html)",
+      "Bash(awk 'NR>=273 && NR<=280' ui_preview.html)",
+      "Bash(awk 'BEGIN{f=0} /^var PERK_DATA=\\\\[/{f=1; next} /^function refresh/{f=0; next} f{print}' 'C:/Users/Ded/Documents/Projects/ARMA 3 Scripts/@RPG_System/ui_preview.html')"
     ]
   }
 }

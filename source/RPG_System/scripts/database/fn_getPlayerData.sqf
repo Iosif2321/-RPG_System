@@ -5,7 +5,7 @@
 
 params ["_playerID"];
 
-if (RPG_DB_PLAYERS containsKey _playerID) then {
+if (_playerID in RPG_DB_PLAYERS) then {
     RPG_DB_PLAYERS get _playerID
 } else {
     // Создаем новые данные для игрока

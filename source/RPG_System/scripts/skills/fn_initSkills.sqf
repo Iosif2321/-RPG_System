@@ -1,172 +1,170 @@
 /*
-    RPG System - Skills
-    Система навыков и их прокачки
-    
-    Автор: Server Admin
-    Версия: 1.0.0
+    RPG System - Skills Initialization (Cyberpunk 2077 Skill Tree)
+    Инициализация системы навыков с древом перков
+
+    Атрибуты: constitution, reflexes, technical, intelligence, cool
+    Каждый атрибут имеет 2 ветки по 3 перка.
+    На уровнях 3 и 7 — выбор специализации (перк).
 */
 
-// Типы навыков
-RPG_SKILL_TYPES = ["medical", "repair", "combat", "support", "engineering"];
+// Типы навыков (атрибуты)
+RPG_SKILL_TYPES = ["constitution", "reflexes", "technical", "intelligence", "cool"];
 
-// Бонусы за уровень навыка (в процентах)
+// Бонусы за уровень навыка (множитель XP, в процентах)
 RPG_SKILL_BONUSES = [
-    [0, 0],       // Уровень 0 - без бонуса
-    [1, 0.05],    // Уровень 1 - 5%
-    [2, 0.10],    // Уровень 2 - 10%
-    [3, 0.15],    // Уровень 3 - 15%
-    [4, 0.20],    // Уровень 4 - 20%
-    [5, 0.30],    // Уровень 5 - 30%
-    [6, 0.40],    // Уровень 6 - 40%
-    [7, 0.50],    // Уровень 7 - 50%
-    [8, 0.65],    // Уровень 8 - 65%
-    [9, 0.80],    // Уровень 9 - 80%
-    [10, 1.0]     // Уровень 10 - 100%
+    [0, 0],       // Уровень 0 — без бонуса
+    [1, 0.05],    // Уровень 1 — 5%
+    [2, 0.10],    // Уровень 2 — 10%
+    [3, 0.15],    // Уровень 3 — 15%
+    [4, 0.20],    // Уровень 4 — 20%
+    [5, 0.30],    // Уровень 5 — 30%
+    [6, 0.40],    // Уровень 6 — 40%
+    [7, 0.50],    // Уровень 7 — 50%
+    [8, 0.65],    // Уровень 8 — 65%
+    [9, 0.80],    // Уровень 9 — 80%
+    [10, 1.0]     // Уровень 10 — 100%
+    // Уровень > 10 экстраполируется: +10% за каждый уровень
 ];
 
-// Инициализация системы навыков
-RPG_fnc_initSkills = {
-    diag_log "[RPG] Initializing skills system...";
-    
-    // Навыки уже инициализируются в createNewPlayerData
-    diag_log "[RPG] Skills system initialized";
-};
+// Перки древа навыков (Cyberpunk 2077 стиль)
+// Формат: "attribute_level" → [имя, описание, реализуемость, icon]
+// реализуемость: "full" (работает), "xp" (множитель XP), "visual" (пока только визуал)
 
-// Получить навык игрока
-RPG_fnc_getSkill = {
-    params ["_player", "_skillType"];
-    
-    private _playerID = getPlayerUID _player;
-    private _data = [_playerID] call RPG_fnc_getPlayerData;
-    
-    private _skills = _data get "skills";
-    if (isNil "_skills") exitWith {0};
-    
-    _skills getOrDefault [_skillType, 0]
-};
+RPG_SKILL_PERKS = createHashMap;
 
-// Установить значение XP навыка напрямую (не уровень, а XP)
-RPG_fnc_setSkill = {
-    params ["_player", "_skillType", "_value"];
+// ═══════════════════════════════════════════════════════
+// CONSTITUTION — Физиология (Body)
+// ═══════════════════════════════════════════════════════
+RPG_SKILL_PERKS set ["constitution_branches", ["athlete", "vitality"]];
 
-    private _playerID = getPlayerUID _player;
-    private _data = [_playerID] call RPG_fnc_getPlayerData;
+// Ветка: Атлетика
+RPG_SKILL_PERKS set ["constitution_1_athlete", [
+    "Вьючный мул", "Переносимый вес +15%", "full", "🎒"
+]];
+RPG_SKILL_PERKS set ["constitution_3_athlete", [
+    "Второе дыхание", "Восстановление выносливости +20% вне боя", "full", "💨"
+]];
+RPG_SKILL_PERKS set ["constitution_5_athlete", [
+    "Мастер препятствий", "Быстрое преодоление препятствий", "visual", "🧗"
+]];
 
-    private _skills = _data get "skills";
-    if (isNil "_skills") then {
-        _skills = createHashMap;
-        _data set ["skills", _skills];
-    };
+// Ветка: Живучесть
+RPG_SKILL_PERKS set ["constitution_1_vitality", [
+    "Адреналиновый шок", "3 сек без замедления при ранении", "visual", "⚡"
+]];
+RPG_SKILL_PERKS set ["constitution_3_vitality", [
+    "Своих не бросаем", "Скорость перетаскивания раненых +30%", "full", "🤝"
+]];
+RPG_SKILL_PERKS set ["constitution_5_vitality", [
+    "Крепкий орешек", "Снижение потери сознания от лёгких ранений", "visual", "🛡️"
+]];
 
-    // Ограничиваем XP снизу нулём (максимума нет — накапливается до 10 уровня = 10000 XP)
-    _value = _value max 0;
+// ═══════════════════════════════════════════════════════
+// REFLEXES — Огневая подготовка (Reflexes)
+// ═══════════════════════════════════════════════════════
+RPG_SKILL_PERKS set ["reflexes_branches", ["assault", "marksman"]];
 
-    _skills set [_skillType, _value];
-    [_playerID, _data] call RPG_fnc_setPlayerData;
+// Ветка: Штурмовик
+RPG_SKILL_PERKS set ["reflexes_1_assault", [
+    "Мышечная память", "Смена оружия на 25% быстрее", "visual", "🔁"
+]];
+RPG_SKILL_PERKS set ["reflexes_3_assault", [
+    "Тактическая перезарядка", "Перезарядка неполного магазина на 20% быстрее", "visual", "📦"
+]];
+RPG_SKILL_PERKS set ["reflexes_5_assault", [
+    "Контроль ствола", "Снижен горизонтальный разброс в движении", "visual", "🎯"
+]];
 
-    _value
-};
+// Ветка: Марксман
+RPG_SKILL_PERKS set ["reflexes_1_marksman", [
+    "Контроль дыхания", "Больше время задержки дыхания", "visual", "🌬️"
+]];
+RPG_SKILL_PERKS set ["reflexes_3_marksman", [
+    "Холодный расчёт", "Быстрее стабилизация прицела после спринта", "visual", "🧊"
+]];
+RPG_SKILL_PERKS set ["reflexes_5_marksman", [
+    "Пристрелка", "Мгновенная пристрелка и дальномер", "visual", "🔭"
+]];
 
-// Добавить XP к навыку
-RPG_fnc_addSkillXP = {
-    params ["_player", "_skillType", "_xpAmount"];
-    
-    private _playerID = getPlayerUID _player;
-    private _data = [_playerID] call RPG_fnc_getPlayerData;
-    
-    private _skills = _data get "skills";
-    if (isNil "_skills") then {
-        _skills = createHashMap;
-        _data set ["skills", _skills];
-    };
-    
-    private _currentXP = _skills getOrDefault [_skillType, 0];
-    private _newXP = _currentXP + _xpAmount;
-    
-    // Проверяем повышение уровня навыка
-    private _currentLevel = [_currentXP] call RPG_fnc_getSkillLevel;
-    private _newLevel = [_newXP] call RPG_fnc_getSkillLevel;
-    
-    _skills set [_skillType, _newXP];
-    
-    // Если уровень навыка повысился
-    if (_newLevel > _currentLevel) then {
-        [_player, _skillType, _newLevel] call RPG_fnc_onSkillLevelUp;
-    };
-    
-    [_playerID, _data] call RPG_fnc_setPlayerData;
-    
-    _newXP
-};
+// ═══════════════════════════════════════════════════════
+// TECHNICAL — Техническая грамотность (Technical)
+// ═══════════════════════════════════════════════════════
+RPG_SKILL_PERKS set ["technical_branches", ["engineering", "sapper"]];
 
-// Получить уровень навыка (0-10)
-RPG_fnc_getSkillLevel = {
-    params ["_skillXP"];
-    
-    // Простая формула: каждые 1000 XP дают уровень
-    private _level = floor (_skillXP / 1000);
-    [_level, 0, 10] call BIS_fnc_clamp
-};
+// Ветка: Инженерия и механика
+RPG_SKILL_PERKS set ["technical_1_engineering", [
+    "Полевой ремонт", "Ремонт техники и разрушений в 2 раза быстрее", "xp", "🔧"
+]];
+RPG_SKILL_PERKS set ["technical_3_engineering", [
+    "Фортификатор", "Быстрая установка заграждений", "xp", "🏗️"
+]];
+RPG_SKILL_PERKS set ["technical_5_engineering", [
+    "Механик-водитель", "Техника получает меньше урона от бездорожья", "visual", "🚗"
+]];
 
-// Получить бонус навыка
-RPG_fnc_getSkillBonus = {
-    params ["_player", "_skillType"];
-    
-    private _skillXP = [_player, _skillType] call RPG_fnc_getSkill;
-    private _level = [_skillXP] call RPG_fnc_getSkillLevel;
-    
-    // Ищем бонус для уровня
-    private _bonus = 0;
-    {
-        if (_x select 0 == _level) exitWith {
-            _bonus = _x select 1;
-        };
-    } forEach RPG_SKILL_BONUSES;
-    
-    // Если уровень выше 10, используем максимальный бонус
-    if (_level > 10) then {
-        _bonus = (RPG_SKILL_BONUSES select 10) select 1;
-    };
-    
-    _bonus
-};
+// Ветка: Сапёрное дело
+RPG_SKILL_PERKS set ["technical_1_sapper", [
+    "Сапёрная лопатка", "Быстрая и тихая установка мин/взрывчатки", "xp", "💣"
+]];
+RPG_SKILL_PERKS set ["technical_3_sapper", [
+    "Наметанный глаз", "Больше радиус обнаружения мин и растяжек", "visual", "👁️"
+]];
+RPG_SKILL_PERKS set ["technical_5_sapper", [
+    "Ювелирная работа", "Безопасное обезвреживание сложной взрывчатки", "xp", "💎"
+]];
 
-// Обработка повышения уровня навыка
-RPG_fnc_onSkillLevelUp = {
-    params ["_player", "_skillType", "_newLevel"];
-    
-    private _skillNames = createHashMap;
-    _skillNames set ["medical", "Медицина"];
-    _skillNames set ["repair", "Ремонт"];
-    _skillNames set ["combat", "Бой"];
-    _skillNames set ["support", "Поддержка"];
-    _skillNames set ["engineering", "Инженерия"];
-    
-    private _skillName = _skillNames getOrDefault [_skillType, _skillType];
-    
-    // Уведомление игроку
-    [_player, _skillName, _newLevel] remoteExec ["RPG_fnc_showSkillLevelUpClient", _player, false];
-    
-    diag_log format ["[RPG] %1 skill %2 leveled up to %3", name _player, _skillType, _newLevel];
-};
+// ═══════════════════════════════════════════════════════
+// INTELLIGENCE — Интеллект и связь (Intelligence)
+// ═══════════════════════════════════════════════════════
+RPG_SKILL_PERKS set ["intelligence_branches", ["medic", "operator"]];
 
-// Клиентская функция показа уведомления о повышении навыка
-RPG_fnc_showSkillLevelUpClient = {
-    params ["_skillName", "_newLevel"];
-    
-    private _msg = format ["Навык \"%1\" повышен до уровня %2!", _skillName, _newLevel];
-    
-    // Показываем уведомление
-    private _notifText = format ["+ Навык: %1 (%2)", _skillName, _newLevel];
-    hintC _notifText;
-};
+// Ветка: Полевой медик
+RPG_SKILL_PERKS set ["intelligence_1_medic", [
+    "Жгут и бинт", "Наложение жгутов и перевязка на 30% быстрее", "full", "🩹"
+]];
+RPG_SKILL_PERKS set ["intelligence_3_medic", [
+    "Фармацевт", "Эффективность морфина и эпинефрина повышена", "full", "💊"
+]];
+RPG_SKILL_PERKS set ["intelligence_5_medic", [
+    "Реаниматолог", "Повышенный шанс успешной СЛР", "full", "❤️"
+]];
 
-// Применить бонусы навыков (например, скорость лечения)
-RPG_fnc_applySkillBonuses = {
-    params ["_player", "_skillType"];
-    
-    private _bonus = [_player, _skillType] call RPG_fnc_getSkillBonus;
-    
-    // Возвращаем множитель (1 + бонус)
-    1 + _bonus
-};
+// Ветка: Оператор и наводчик
+RPG_SKILL_PERKS set ["intelligence_1_operator", [
+    "Аккумулятор БПЛА", "Время работы дронов +50%", "visual", "🔋"
+]];
+RPG_SKILL_PERKS set ["intelligence_3_operator", [
+    "Целеуказатель", "Дальняя лазерная подсветка целей", "visual", "🔴"
+]];
+RPG_SKILL_PERKS set ["intelligence_5_operator", [
+    "РЭБ", "Глушение GPS и радиосвязи в радиусе 100м", "visual", "📡"
+]];
+
+// ═══════════════════════════════════════════════════════
+// COOL — Выдержка (Cool)
+// ═══════════════════════════════════════════════════════
+RPG_SKILL_PERKS set ["cool_branches", ["ghost", "steel_nerves"]];
+
+// Ветка: Призрак (Стелс)
+RPG_SKILL_PERKS set ["cool_1_ghost", [
+    "Мягкий шаг", "Громкость шагов снижена при приседе/ползком", "visual", "👣"
+]];
+RPG_SKILL_PERKS set ["cool_3_ghost", [
+    "Слияние с местностью", "Враги замечают на 20% медленнее в укрытии", "visual", "🌿"
+]];
+RPG_SKILL_PERKS set ["cool_5_ghost", [
+    "Ночной охотник", "Снижен эффект ослепления от ПНВ", "visual", "🌙"
+]];
+
+// Ветка: Стальные нервы
+RPG_SKILL_PERKS set ["cool_1_steel_nerves", [
+    "Подавление подавления", "Эффект подавления при обстреле снижен на 50%", "full", "🧠"
+]];
+RPG_SKILL_PERKS set ["cool_3_steel_nerves", [
+    "Ясный ум", "Быстрое восстановление слуха после гранат", "visual", "🔔"
+]];
+RPG_SKILL_PERKS set ["cool_5_steel_nerves", [
+    "Ледяное спокойствие", "Нет потери точности при ранении", "visual", "❄️"
+]];
+
+diag_log "[RPG] Skills system initialized (Cyberpunk 2077 style)";

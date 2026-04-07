@@ -12,7 +12,7 @@ private _data = [_playerID] call RPG_fnc_getPlayerData;
 if (isNil "_data") exitWith {0};
 
 // Возвращаем разные типы информации
-switch (toLower (_returnType param ["", ""])) do {
+switch (toLower _returnType) do {
     case "xp": {_data get "xp"};
     case "totalxp": {_data get "totalXP"};
     case "level": {_data get "level"};

@@ -1,117 +1,86 @@
 /*
     RPG System - ACE Integration
     Интеграция с ACE3 модом
-    
+
     Автор: Server Admin
-    Версия: 1.0.0
+    Версия: 2.0.0
 */
 
-// Глобальные переменные
 RPG_ACE_Initialized = false;
 
-// Инициализация ACE интеграции
-RPG_fnc_initACEIntegration = {
-    if (RPG_ACE_Initialized) exitWith {};
-    if (!isServer) exitWith {};
-    
-    // Проверяем наличие ACE
-    if (!isNil "ace_medical_isEnabled") then {
-        diag_log "[RPG] ACE3 detected, integrating...";
+if (RPG_ACE_Initialized) exitWith {};
+if (!isServer) exitWith {};
 
-        // ace_medical_treated, ace_medical_bandaged и др. не являются публичными событиями ACE3.
-        // Официальные события: ace_treatmentSucceded / ace_treatmentFailed / ace_treatmentStarted
-        // Параметры ace_treatmentSucceded: [_caller, _target, _selectionName, _className, _itemUser, _usedItem, _createLitter]
+if (!isNil "ace_medical_isEnabled") then {
+    diag_log "[RPG] ACE3 detected, integrating...";
 
-        // Единый обработчик успешного лечения — фильтруем по className
-        ["ace_treatmentSucceded", {
-            params ["_caller", "_target", "_selectionName", "_className", "_itemUser", "_usedItem", "_createLitter"];
+    ["ace_treatmentSucceded", {
+        params ["_caller", "_target", "_selectionName", "_className", "_itemUser", "_usedItem", "_createLitter"];
 
-            if (isNil "_caller" || {isNull _caller} || {!isPlayer _caller}) exitWith {};
+        if (isNil "_caller" || {isNull _caller} || {!isPlayer _caller}) exitWith {};
 
-            // Определяем XP и источник по типу лечения
-            private _xpAmount = 0;
-            private _source = "";
-            private _classLower = toLower _className;
+        // Применяем бонус навыка intelligence
+        private _bonus = [_caller, "intelligence"] call RPG_fnc_getSkillBonus;
 
-            // Хирургические швы
-            if (_classLower in ["ace_suture", "ace_suture_basic"]) exitWith {
-                _xpAmount = 40;
-                _source = "Наложение швов";
-            };
-            // Жгуты
-            if (_classLower in ["ace_tourniquet", "ace_tourniquet_cat"]) exitWith {
-                _xpAmount = 20;
-                _source = "Наложение жгута";
-            };
-            // Инъекции / препараты
-            if (_classLower find "morphine" >= 0
-                || {_classLower find "epinephrine" >= 0}
-                || {_classLower find "adenosine" >= 0}) exitWith {
-                _xpAmount = 30;
-                _source = "Введение препарата";
-            };
-            // Бинты (bandage)
-            if (_classLower find "bandage" >= 0 || {_classLower find "packing" >= 0}) exitWith {
-                _xpAmount = 15;
-                _source = "Наложение бинта";
-            };
-            // Прочие действия
-            _xpAmount = 10;
-            _source = format ["Лечение ACE (%1)", _className];
+        private _classLower = toLower _className;
 
-            if (_xpAmount > 0) then {
-                [_caller, _xpAmount, _source, "skill_medical"] call RPG_fnc_addXP;
-                [_caller, "medical", floor (_xpAmount / 2)] call RPG_fnc_addSkillXP;
+        if (_classLower in ["ace_suture", "ace_suture_basic"]) exitWith {
+            private _baseXP = 40;
+            private _actualXP = floor (_baseXP * (1 + _bonus));
+            [_caller, _actualXP, "Наложение швов"] call RPG_fnc_addXP;
+            [_caller, "intelligence", floor (_actualXP / 2)] call RPG_fnc_addSkillXP;
+        };
+        if (_classLower in ["ace_tourniquet", "ace_tourniquet_cat"]) exitWith {
+            private _baseXP = 20;
+            private _actualXP = floor (_baseXP * (1 + _bonus));
+            [_caller, _actualXP, "Наложение жгута"] call RPG_fnc_addXP;
+            [_caller, "intelligence", floor (_actualXP / 2)] call RPG_fnc_addSkillXP;
+        };
+        if (_classLower find "morphine" >= 0
+            || {_classLower find "epinephrine" >= 0}
+            || {_classLower find "adenosine" >= 0}) exitWith {
+            private _baseXP = 30;
+            private _actualXP = floor (_baseXP * (1 + _bonus));
+            [_caller, _actualXP, "Введение препарата"] call RPG_fnc_addXP;
+            [_caller, "intelligence", floor (_actualXP / 2)] call RPG_fnc_addSkillXP;
+        };
+        if (_classLower find "bandage" >= 0 || {_classLower find "packing" >= 0}) exitWith {
+            private _baseXP = 15;
+            private _actualXP = floor (_baseXP * (1 + _bonus));
+            [_caller, _actualXP, "Наложение бинта"] call RPG_fnc_addXP;
+            [_caller, "intelligence", floor (_actualXP / 2)] call RPG_fnc_addSkillXP;
+        };
 
-                // Обновляем статистику
-                private _callerID = getPlayerUID _caller;
-                private _data = [_callerID] call RPG_fnc_getPlayerData;
-                private _stats = _data get "stats";
-                _stats set ["revives", (_stats getOrDefault ["revives", 0])];
-                [_callerID, _data] call RPG_fnc_setPlayerData;
-            };
-        }] call CBA_fnc_addEventHandler;
+        private _baseXP = 10;
+        private _actualXP = floor (_baseXP * (1 + _bonus));
+        [_caller, _actualXP, format ["Лечение ACE (%1)", _className]] call RPG_fnc_addXP;
+        [_caller, "intelligence", floor (_actualXP / 2)] call RPG_fnc_addSkillXP;
+    }] call CBA_fnc_addEventHandler;
 
-        // Воскрешение — ace_medical_revived подтверждено в большинстве версий ACE3
-        // Параметры: [_patient, _medic]
-        ["ace_medical_revived", {
-            params ["_patient", "_medic"];
+    ["ace_medical_revived", {
+        params ["_patient", "_medic"];
 
-            if (isNil "_medic" || {isNull _medic} || {!isPlayer _medic}) exitWith {};
+        if (isNil "_medic" || {isNull _medic} || {!isPlayer _medic}) exitWith {};
 
-            [_medic, 75, "Воскрешение ACE", "skill_medical"] call RPG_fnc_addXP;
-            [_medic, "medical", 50] call RPG_fnc_addSkillXP;
+        // Применяем бонус навыка intelligence
+        private _bonus = [_medic, "intelligence"] call RPG_fnc_getSkillBonus;
+        private _baseXP = 75;
+        private _actualXP = floor (_baseXP * (1 + _bonus));
 
-            // Обновляем статистику
-            private _medicID = getPlayerUID _medic;
-            private _data = [_medicID] call RPG_fnc_getPlayerData;
-            private _stats = _data get "stats";
-            _stats set ["revives", (_stats getOrDefault ["revives", 0]) + 1];
-            [_medicID, _data] call RPG_fnc_setPlayerData;
+        [_medic, _actualXP, "Воскрешение ACE"] call RPG_fnc_addXP;
+        [_medic, "intelligence", floor (_actualXP / 2)] call RPG_fnc_addSkillXP;
 
-            diag_log format ["[RPG] %1 revived %2 for 75 XP", name _medic, name _patient];
-        }] call CBA_fnc_addEventHandler;
+        private _medicID = getPlayerUID _medic;
+        private _data = [_medicID] call RPG_fnc_getPlayerData;
+        private _stats = _data get "stats";
+        _stats set ["revives", (_stats getOrDefault ["revives", 0]) + 1];
+        [_medicID, _data] call RPG_fnc_setPlayerData;
 
-        RPG_ACE_Initialized = true;
-        diag_log "[RPG] ACE3 integration complete";
-    } else {
-        diag_log "[RPG] ACE3 not detected, skipping integration";
-    };
+        diag_log format ["[RPG] %1 revived %2 for %3 XP (bonus: %.0f%%)", name _medic, name _patient, _actualXP, _bonus * 100];
+    }] call CBA_fnc_addEventHandler;
+
+    RPG_ACE_Initialized = true;
+    diag_log "[RPG] ACE3 integration complete";
+} else {
+    diag_log "[RPG] ACE3 not detected, skipping integration";
 };
-
-// Обработчик ACE медицины (вызывается из events)
-RPG_fnc_onACEMedical = {
-    params ["_healer", "_target", "_action"];
-    
-    private _xpAmount = switch (_action) do {
-        case "bandage": {15};
-        case "tourniquet": {20};
-        case "inject": {30};
-        case "suture": {40};
-        case "revive": {75};
-        default {10};
-    };
-    
-    [_healer, _xpAmount, format ["ACE %1", _action], "skill_medical"] call RPG_fnc_addXP;
-};
-

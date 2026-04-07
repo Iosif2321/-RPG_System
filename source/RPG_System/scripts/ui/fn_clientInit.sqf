@@ -22,8 +22,8 @@ if (!hasInterface) exitWith {};
     private _eh = (findDisplay 46) displayAddEventHandler ["KeyDown", {
         params ["_display", "_key", "_shift", "_ctrl", "_alt"];
 
-        // F7 = 0x40
-        if (_key == 0x40) then {
+        // F7 = 0x41
+        if (_key == 0x41) then {
             if (dialog) then {
                 closeDialog 0;
             } else {

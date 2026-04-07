@@ -41,7 +41,7 @@ hint str ([player] call RPG_fnc_getProgressToNextLevel);
 RPG_DB_PLAYERS deleteAt (getPlayerUID player);
 
 // Полностью очистить базу данных
-RPG_DB_PLAYERS clear;
+RPG_DB_PLAYERS = createHashMap;
 
 // Сбросить все данные и пересоздать базу
 profileNamespace setVariable ["RPG_System_PlayerData", nil];
@@ -65,12 +65,12 @@ private _vehicle = createVehicle ["O_APC_Wheeled_02_rcws_v2_mg_F", getPos player
 // ============================================
 
 // Показать количество игроков в базе
-hint str format ["Игроков в базе: %1", RPG_DB_PLAYERS size()];
+hint str format ["Игроков в базе: %1", count RPG_DB_PLAYERS];
 
 // Показать всех игроков
 {
     diag_log format ["Player: %1, Data: %2", _x, RPG_DB_PLAYERS get _x];
-} forEach allKeys RPG_DB_PLAYERS;
+} forEach keys RPG_DB_PLAYERS;
 
 // Проверить наличие данных в профиле
 hint str (profileNamespace getVariable "RPG_System_PlayerData");

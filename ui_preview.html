@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RPG System v2.0 -- Skill Tree Preview</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap');
+:root{--primary:rgba(51,153,204,1);--secondary:rgba(26,77,102,0.8);--text:rgba(255,255,255,1);--success:rgba(51,204,51,1);--warning:rgba(255,204,51,1);--progress-fill:#3399cc;--progress-bg:rgba(0,0,0,0.5);--title-size:1.25rem;--text-size:0.95rem;--button-size:0.85rem}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Roboto Condensed',Arial,sans-serif;color:var(--text);background:#1a1a2e;min-height:100vh;display:flex;justify-content:center;align-items:center}
+body::before{content:'';position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:0}
+.dialog{position:relative;z-index:1;width:560px;max-height:90vh;overflow-y:auto}
+.title-bar{background:var(--primary);text-align:center;font-size:var(--title-size);font-weight:700;padding:0.55rem 0;letter-spacing:0.06em;cursor:move}
+.body{background:var(--secondary);padding:0.6rem 1.2rem 1rem}
+.row-xp,.row-level{font-size:var(--text-size);color:var(--text);padding:0.15rem 0}
+.progress-wrap{width:100%;height:1.4rem;background:var(--progress-bg);border:1px solid var(--primary);border-radius:2px;margin:0.35rem 0;overflow:hidden}
+.progress-fill{height:100%;background:var(--progress-fill);transition:width 0.6s}
+.progress-label{text-align:center;font-size:0.75rem;color:var(--text);margin-top:-1.3rem;position:relative}
+.attr-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:0.5rem;margin:0.6rem 0}
+.attr-block{background:rgba(0,0,0,0.25);border:1px solid var(--primary);border-radius:6px;padding:0.4rem 0;text-align:center}
+.attr-score{font-size:2.4rem;font-weight:700;color:#f0c0a0}
+.attr-mod{font-size:0.9rem;color:#851414;font-weight:700}
+.attr-label{font-size:0.8rem;color:#ddd}
+.stat-section{margin:0.55rem 0;background:rgba(0,0,0,0.2);border-radius:4px;padding:0.5rem 0.7rem}
+.stat-section h4{font-size:0.78rem;text-transform:uppercase;margin-bottom:0.3rem}
+.stat-section.red h4{color:#e05555}.stat-section.orange h4{color:#e89a50}.stat-section.blue h4{color:#6aafef}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0.35rem;text-align:center}
+.stat-grid .stat-val{font-size:1.3rem;font-weight:700;color:var(--text)}.stat-grid .stat-lbl{font-size:0.7rem;color:rgba(255,255,255,0.65)}
+.skill-list{margin:0.5rem 0}.skill-line{display:flex;align-items:center;gap:0.4rem;font-size:0.82rem;padding:0.12rem 0}
+.skill-name{width:90px;color:#6aafef;flex-shrink:0}.skill-xp{width:50px;text-align:right;color:var(--text);flex-shrink:0;font-size:0.75rem}
+.skill-bar{flex:1;font-family:monospace;font-size:0.82rem;letter-spacing:1px}.skill-bar .filled{color:#851414}.skill-bar .empty{color:#BFAE8A}
+.skill-footer{margin-top:0.3rem;font-size:0.82rem}.skill-footer span:first-child{color:#10396B}.skill-footer span:last-child{color:var(--text)}
+.btn-row{display:flex;justify-content:space-between;gap:0.5rem;margin-top:0.8rem}
+.btn{flex:1;background:var(--primary);color:var(--text);border:none;padding:0.45rem 0;border-radius:3px;font-size:var(--button-size);cursor:pointer}
+.btn:hover{background:rgba(77,179,230,1)}
+.notif-overlay{position:fixed;inset:0;z-index:100;display:none;justify-content:center;align-items:center;pointer-events:none}
+.notif-overlay.show{display:flex}.notif-box{max-width:520px;background:rgba(20,20,20,0.92);border:2px solid var(--warning);border-radius:6px;padding:1.4rem 2rem;text-align:center}
+.notif-box h2{color:var(--warning);font-size:1.4rem;margin-bottom:0.5rem}.notif-box p{color:var(--text);font-size:1rem}
+.title-flash{position:fixed;top:12%;left:0;right:0;z-index:200;text-align:center;font-size:1.8rem;font-weight:700;color:var(--warning);opacity:0;pointer-events:none;transition:opacity 0.3s}
+.title-flash.show{opacity:1}
+.xp-popup{position:fixed;bottom:25%;left:50%;transform:translateX(-50%);z-index:150;background:rgba(0,0,0,0.7);color:#88ff88;padding:0.5rem 1.2rem;border-radius:4px;font-size:1.1rem;font-weight:700;opacity:0;pointer-events:none}
+.xp-popup.show{opacity:1;transform:translateX(-50%) translateY(-10px)}
+.controls{position:fixed;top:8px;right:8px;z-index:300;background:rgba(0,0,0,0.8);padding:0.6rem 0.8rem;border-radius:6px;font-size:0.78rem;max-height:95vh;overflow-y:auto;width:220px}
+.controls label{color:rgba(255,255,255,0.7);display:block;margin-bottom:2px;font-size:0.72rem}
+.controls input{width:70px;background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:3px;padding:2px 4px;font-size:0.72rem}
+.controls button{margin-top:3px;background:var(--primary);color:#fff;border:none;padding:3px 8px;border-radius:3px;cursor:pointer;font-size:0.72rem}
+.controls button:hover{background:rgba(77,179,230,1)}
+.controls button.ctrl-btn-disabled{background:rgba(100,100,100,0.5);color:rgba(150,150,150,0.8);cursor:not-allowed;opacity:0.5}
+.controls button.ctrl-btn-disabled:hover{background:rgba(100,100,100,0.5);color:rgba(150,150,150,0.8)}
+.controls h3{margin-bottom:4px;font-size:0.85rem;color:var(--warning)}
+
+/* SKILL TREE — Cyberpunk 2077 tabs */
+#skillTreeDialog{width:95vw;max-width:900px;max-height:90vh;overflow-y:auto;position:fixed!important;top:50%;left:50%;transform:translate(-50%,-50%);display:none;z-index:50;border:1px solid rgba(255,255,255,0.08);background:#1a1a2e}
+/* tab bar */
+#skillTreeDialog .title-bar{overflow-x:auto}
+.st-tabs{display:flex;gap:2px}
+.st-tab{flex:1;text-align:center;padding:7px 4px;font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;border-bottom:3px solid transparent;transition:all 0.25s;opacity:0.45}
+.st-tab.active{opacity:1;border-bottom:3px solid var(--primary)}
+.st-tab:hover{opacity:0.85}
+.st-tab.disabled{cursor:not-allowed;pointer-events:none;opacity:0.2}
+/* overview tab */
+.st-overview{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:8px 0}
+.st-ov-card{background:rgba(0,0,0,0.35);border-radius:6px;padding:10px;text-align:center;cursor:pointer;border:1px solid rgba(255,255,255,0.07);transition:all 0.25s}
+.st-ov-card:hover{border-color:rgba(255,255,255,0.2)}
+.st-ov-card.wip{opacity:0.25;pointer-events:none}
+.st-ov-card.wip::after{content:'В РАЗРАБОТКЕ';color:rgba(255,204,51,0.6);font-size:0.55rem;font-weight:700;display:block;margin-top:4px}
+.st-ov-name{font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase}
+.st-ov-level{font-size:1.6rem;font-weight:700;margin-top:4px}
+.st-ov-progress{margin-top:4px;height:4px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden}
+.st-ov-progress-bar{height:100%;border-radius:2px;transition:width 0.4s}
+.st-ov-bonus{font-size:0.55rem;color:rgba(255,255,255,0.45);margin-top:3px}
+/* detail tree */
+.st-detail{padding:4px 0 2px}
+.st-detail-header{text-align:center;margin-bottom:8px}
+.st-detail-name{font-size:1.1rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em}
+.st-detail-level{font-size:0.7rem;color:rgba(255,255,255,0.5);margin-top:2px}
+.st-detail-bonus{font-size:0.65rem;color:rgba(255,255,255,0.4);margin-top:1px}
+.st-detail-bonus span{color:#44cc44;font-weight:700}
+.st-branches-layout{display:flex;gap:12px}
+.st-branch{flex:1;display:flex;flex-direction:column}
+.st-branch-header{text-align:center;font-size:0.7rem;font-weight:700;text-transform:uppercase;padding:5px 0;margin-bottom:2px;border-radius:4px}
+/* perk nodes */
+.st-perk-chain{display:flex;flex-direction:column;align-items:center;gap:0}
+.st-perk-node{width:100%;display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border-radius:6px;cursor:pointer;transition:all 0.2s}
+.st-perk-node.unlocked{background:rgba(68,204,68,0.08);border:1px solid rgba(68,204,68,0.25)}
+.st-perk-node.next{border:1px solid rgba(255,204,51,0.4);animation:perkPulse 2s infinite}
+.st-perk-node.locked{background:rgba(30,30,30,0.3);border:1px solid rgba(70,70,70,0.15);opacity:0.4;cursor:not-allowed}
+.st-perk-icon-wrap{flex-shrink:0;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px}
+.unlocked .st-perk-icon-wrap{background:rgba(68,204,68,0.15)}
+.next .st-perk-icon-wrap{background:rgba(255,204,51,0.15)}
+.locked .st-perk-icon-wrap{background:rgba(100,100,100,0.15);font-size:11px}
+.st-perk-info{flex:1;min-width:0}
+.st-perk-name{font-size:0.65rem;font-weight:700;color:#fff}
+.st-perk-desc{font-size:0.52rem;color:rgba(255,255,255,0.45);margin-top:1px;line-height:1.3}
+.st-perk-meta{margin-top:2px;display:flex;gap:4px;align-items:center}
+.st-perk-req{font-size:0.48rem;color:rgba(255,255,255,0.3)}
+.st-perk-badge{font-size:0.42rem;padding:1px 4px;border-radius:2px;font-weight:600}
+.st-perk-badge.full-badge{background:rgba(68,204,68,0.2);color:#66cc99}
+.st-perk-badge.xp-badge{background:rgba(51,153,204,0.2);color:#66bbff}
+.st-perk-badge.visual-badge{background:rgba(140,140,140,0.15);color:#999}
+/* connectors */
+.st-connector{width:1px;height:6px;margin:0 0 4px;align-self:center;position:relative}
+.st-connector.ok{background:rgba(68,204,68,0.3)}
+.st-connector.wait{background:rgba(255,204,51,0.3)}
+.st-connector.off{background:rgba(80,80,80,0.15)}
+@keyframes perkPulse{0%,100%{box-shadow:0 0 0 rgba(255,204,51,0)}50%{box-shadow:0 0 8px rgba(255,204,51,0.35)}}
+.st-tooltip{display:none;position:fixed;z-index:500;background:rgba(10,10,15,0.96);border:1px solid var(--warning);border-radius:6px;padding:0.6rem 0.9rem;max-width:250px;pointer-events:none}
+.st-tooltip.visible{display:block}
+.st-tooltip h4{color:var(--warning);font-size:0.88rem;margin-bottom:0.25rem}
+.st-tooltip p{color:rgba(255,255,255,0.8);font-size:0.78rem;line-height:1.4}
+.st-tooltip .tt-req{color:#666;font-size:0.68rem;margin-top:0.25rem}
+.st-tooltip .tt-status{margin-top:0.35rem;font-size:0.72rem;font-weight:700}
+.st-tooltip .tt-status.unlocked{color:#44cc44}.st-tooltip .tt-status.locked{color:#888}
+</style>
+</head>
+<body>
+
+<div class="controls">
+  <h3>RPG Preview v2.0</h3>
+  <label>Уровень <input type="number" id="ctrlLevel" value="1" min="1" max="30"></label>
+  <label>XP <input type="number" id="ctrlXP" value="0" min="0"></label>
+  <label>Имя <input type="text" id="ctrlName" value="Дед" style="width:90px"></label>
+  <div style="margin-top:5px;border-top:1px solid rgba(255,255,255,0.15);padding-top:4px">
+    <label>Киллы <input type="number" id="ctrlKills" value="0"></label>
+    <label>Смерти <input type="number" id="ctrlDeaths" value="0"></label>
+    <label>Воскрес. <input type="number" id="ctrlRevives" value="0"></label>
+    <label>Ремонты <input type="number" id="ctrlRepairs" value="0"></label>
+    <label>Фортиф. <input type="number" id="ctrlForts" value="0"></label>
+    <label>Техника <input type="number" id="ctrlVehicles" value="0"></label>
+    <label>Часы <input type="number" id="ctrlPlaytime" value="0"></label>
+  </div>
+  <div style="margin-top:5px;border-top:1px solid rgba(255,255,255,0.15);padding-top:4px">
+    <label>Физиология <input type="number" id="ctrlSkConstitution" value="0"></label>
+    <label>Рефлексы <input type="number" id="ctrlSkReflexes" value="0"></label>
+    <label>Техника <input type="number" id="ctrlSkTechnical" value="0"></label>
+    <label>Интеллект <input type="number" id="ctrlSkIntelligence" value="0"></label>
+    <label>Выдержка <input type="number" id="ctrlSkCool" value="0"></label>
+  </div>
+  <button onclick="refresh()">Обновить</button>
+  <button onclick="levelUp()">Ур.+1</button>
+  <div style="margin-top:5px;border-top:1px solid rgba(255,255,255,0.15);padding-top:4px;font-size:0.7rem;color:#e89a50;font-weight:700">Физиология → XP</div>
+  <label>Вес (кг) <input type="number" id="ctrlWeight" value="20" min="0" max="200" style="width:55px"></label>
+  <button onclick="simCarry()">Нести груз</button>
+  <div style="margin-top:5px;border-top:1px solid rgba(255,255,255,0.15);padding-top:4px;font-size:0.7rem;color:rgba(150,150,150,0.6)">Другие действия (в разработке)</div>
+  <button class="ctrl-btn-disabled" title="В разработке">Убийство</button>
+  <button class="ctrl-btn-disabled" title="В разработке">Бинт</button>
+  <button class="ctrl-btn-disabled" title="В разработке">Жгут</button>
+  <button class="ctrl-btn-disabled" title="В разработке">Воскрешение</button>
+  <button class="ctrl-btn-disabled" title="В разработке">Ремонт</button>
+  <button class="ctrl-btn-disabled" title="В разработке">Заправка</button>
+  <button class="ctrl-btn-disabled" title="В разработке">Фортификация</button>
+</div>
+
+<div class="title-flash" id="titleFlash"></div>
+<div class="xp-popup" id="xpPopup"></div>
+<div class="notif-overlay" id="notifOverlay"><div class="notif-box"><h2 id="notifTitle"></h2><p id="notifMsg"></p></div></div>
+<div class="st-tooltip" id="tooltip"><h4 id="ttTitle"></h4><p id="ttDesc"></p><div class="tt-req" id="ttReq"></div><div class="tt-status" id="ttStatus"></div></div>
+
+<!-- MAIN DIALOG -->
+<div class="dialog" id="dialog">
+  <div class="title-bar">RPG Система</div>
+  <div class="body">
+    <div class="row-xp" id="xpText">ОПЫТ: 0 / 1000</div>
+    <div class="row-level" id="levelText">УРОВЕНЬ 1 НОВОБРАНЕЦ</div>
+    <div class="row-level" id="totalXPText" style="font-size:0.7rem;color:rgba(255,255,255,0.45)">Всего XP: 0</div>
+    <div class="progress-wrap"><div class="progress-fill" id="progressBar" style="width:0%"></div></div>
+    <div class="progress-label" id="progressLabel">0%</div>
+    <div class="attr-grid">
+      <div class="attr-block"><div class="attr-score" id="attr0">0</div><div class="attr-mod" id="mod0">-5</div><div class="attr-label">ОСНОВА</div></div>
+      <div class="attr-block"><div class="attr-score" id="attr1">0</div><div class="attr-mod" id="mod1">-5</div><div class="attr-label">РЕФЛЕКСЫ</div></div>
+      <div class="attr-block"><div class="attr-score" id="attr2">0</div><div class="attr-mod" id="mod2">-5</div><div class="attr-label">ТЕХНИКА</div></div>
+      <div class="attr-block"><div class="attr-score" id="attr3">0</div><div class="attr-mod" id="mod3">-5</div><div class="attr-label">ИНТЕЛЛ.</div></div>
+      <div class="attr-block"><div class="attr-score" id="attr4">0</div><div class="attr-mod" id="mod4">-5</div><div class="attr-label">ВЫДЕРЖКА</div></div>
+    </div>
+    <div class="stat-section red"><h4>Боевая статистика</h4><div class="stat-grid"><div><div class="stat-val" id="statKills">0</div><div class="stat-lbl">УБИЙСТВА</div></div><div><div class="stat-val" id="statDeaths">0</div><div class="stat-lbl">СМЕРТИ</div></div><div><div class="stat-val" id="statKD">0</div><div class="stat-lbl">K/D</div></div></div></div>
+    <div class="stat-section orange"><h4>Боевые действия</h4><div class="stat-grid"><div><div class="stat-val" id="statRevives">0</div><div class="stat-lbl">ВОСКРЕШЕНИЯ</div></div><div><div class="stat-val" id="statRepairs">0</div><div class="stat-lbl">РЕМОНТЫ</div></div><div><div class="stat-val" id="statPlaytime">0</div><div class="stat-lbl">ЧАСОВ</div></div></div></div>
+    <div class="stat-section blue"><h4>Опыт по атрибутам</h4><div class="skill-list" id="skillList"></div></div>
+    <div class="btn-row">
+      <button class="btn" onclick="refresh()">Обновить</button>
+      <button class="btn" onclick="openSkillTree()">Древо навыков</button>
+      <button class="btn" onclick="document.getElementById('dialog').style.display='none'">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<!-- SKILL TREE DIALOG -->
+<div class="dialog" id="skillTreeDialog" style="padding:0">
+  <div class="title-bar">Древо навыков</div>
+  <div class="st-tabs" id="stTabs"></div>
+  <div class="body" id="stBody" style="padding:0.5rem 1rem"></div>
+</div>
+
+<script>
+var BASE_XP=1000,EXPONENT=1.5;
+function getNextLevelXP(l){return Math.floor(BASE_XP*Math.pow(l,EXPONENT))}
+var SKILL_BONUSES=[[0,0],[1,0.05],[2,0.10],[3,0.15],[4,0.20],[5,0.30],[6,0.40],[7,0.50],[8,0.65],[9,0.80],[10,1.0]];
+// Нелинейная кривая: 1-5: 500 XP/ур | 6-10: 1500 | 11-20: 3000 | 21-40: 6000 | 41-70: 12000 | 71-100: 25000
+var _SKL_RANGES=[[1,5,500],[6,10,1500],[11,20,3000],[21,40,6000],[41,70,12000],[71,100,25000]];
+function getSkillLevel(xp){
+ if(xp<=0)return 0;
+ var cum=0,lv=0;
+ for(var r=0;r<_SKL_RANGES.length;r++){
+  var lo=_SKL_RANGES[r][0],hi=_SKL_RANGES[r][1],cost=_SKL_RANGES[r][2];
+  for(var l=lo;l<=hi;l++){if(xp<cum+cost)return lv;cum+=cost;lv=l;}
+ }
+ return 100;
+}
+function getXPForLevel(lv){
+ if(lv<=0)return 0;
+ var cum=0;
+ for(var r=0;r<_SKL_RANGES.length;r++){
+  var lo=_SKL_RANGES[r][0],hi=_SKL_RANGES[r][1],cost=_SKL_RANGES[r][2];
+  for(var l=lo;l<=hi;l++){cum+=cost;if(l>=lv)return cum;}
+ }
+ return cum;
+}
+function getSkillBonus(x){var l=getSkillLevel(x);if(l<=10)return SKILL_BONUSES[l][1];return 1.0+((l-10)*0.1)}
+var ATTR_KEYS=['constitution','reflexes','technical','intelligence','cool'];
+var ATTR_NAMES=['ФИЗИОЛОГИЯ','РЕФЛЕКСЫ','ТЕХНИКА','ИНТЕЛЛЕКТ','ВЫДЕРЖКА'];
+var ATTR_COLORS=['#e05555','#ffcc44','#ff8833','#44aaff','#aa55ff'];
+
+var P={name:'Дед',level:1,xp:0,totalXP:0,skills:{constitution:0,reflexes:0,technical:0,intelligence:0,cool:0},stats:{kills:0,deaths:0,revives:0,repairs:0,fortifications:0,vehiclesDestroyed:0,playtime:0}};
+
+// PERK_DATA defined below with tier structure
+
+var UNLOCKED_ATTRS=['constitution'];
+var tBadge={full:'full-badge',xp:'xp-badge',visual:'visual-badge'};
+var tNames={full:'Работает в игре',xp:'Множитель XP',visual:'По визуал'};
+
+// TIER STRUCTURE:
+// Tier 0: 0-5   (Базовые)
+// Tier 1: 5-10  (Продвинутые)
+// Tier 2: 10-15 (Опытные)
+// Tier 3: 15-20 (Элитные)
+// [пустота 20-50 — намеренный пробел]
+// Tier 4: 50-100 (Мастера)
+// Tier 5: 100+   (Легенда)
+
+var TIER_LEVELS=[0,5,10,15,20,50,100];
+var TIER_NAMES=['БАЗОВЫЙ','ПРОДВИНУТЫЙ','ОПЫТНЫЙ','СПЕЦИАЛИЗАЦИЯ','ЭЛИТНЫЙ','ВЕТЕРАН','МАСТЕР'];
+var TIER_COLORS=['#44cc44','#44aaff','#aa55ff','#ff8833','#ffcc44','#ff5555','#ff99ff'];
+// Стоимость открытия тира и перка в нём
+var TIER_OPEN_COST=[0,2,4,6,8,15,25];
+var TIER_PERK_COST=[2,4,6,8,12,18,25];
+
+function getTier(lvl){
+ if(lvl>=100)return 6;
+ if(lvl>=50)return 5;
+ if(lvl>=20)return 4;
+ if(lvl>=15)return 3;
+ if(lvl>=10)return 2;
+ if(lvl>=5)return 1;
+ return 0;
+}
+
+var PERK_DATA=[
+{key:'constitution',name:'ФИЗИОЛОГИЯ',color:'#e05555',
+ tiers:[
+  {tier:0,branches:[{name:'Базовые',perks:[
+   {n:'Спринтер',d:'+10% скорость бега с места на 1,5 сек',i:'⚡',t:'full'},
+   {n:'Пугливый заяц',d:'+10% скорость бега на 1,5 сек при лёгком ранении',i:'🐇',t:'full'},
+   {n:'Ловкие руки',d:'+10% скорость перезарядки',i:'🤲',t:'full'}
+  ]}]},
+  {tier:1,branches:[{name:'Выносливость',perks:[
+   {n:'Легкоатлет',d:'+10% скорость восстановления выносливости',i:'🏃',t:'full'},
+   {n:'Марафонец',d:'+10% объём выносливости',i:'💨',t:'full'},
+   {n:'Организованный',d:'+15% вместимость рюкзака',i:'🎒',t:'full'}
+  ]}]},
+  {tier:2,branches:[{name:'Тело',perks:[
+   {n:'Длинный шаг',d:'+5% скорость передвижения',i:'👣',t:'full'},
+   {n:'Рефлексы',d:'+10% скорость перезарядки и прицеливания',i:'🎯',t:'full'},
+   {n:'Густая кровь',d:'+10% скорость свёртываемости крови',i:'🩸',t:'full'}
+  ]}]},
+  {tier:3,branches:[{name:'Снаряжение',perks:[
+   {n:'Клептоман',d:'15% шанс +1 магазин при снаряжении личного оборудования',i:'🎰',t:'xp'},
+   {n:'Впихнуть невпихуемое',d:'15% шанс +5 патронов в магазине',i:'📦',t:'xp'},
+   {n:'Большая доза',d:'Морфин: 15% беск. выносл. 30 сек / 5% передоз (потеря сознания)',i:'💊',t:'xp'}
+  ]}]},
+  {tier:4,branches:[{name:'Стойкость',perks:[
+   {n:'Железная воля',d:'-15% шанс потери сознания',i:'🦾',t:'full'},
+   {n:'Любитель адреналина',d:'При использовании адреналина или высоком пульсе — скорость заживления ран +20%',i:'💉',t:'full'},
+   {n:'Крепкие кости',d:'30% шанс самостоятельно восстановиться от перелома',i:'🦴',t:'xp'}
+  ]}]},
+  {tier:5,branches:[{name:'Ветеран',perks:[
+   {n:'Баскетболист',d:'+20% дальность броска гранаты',i:'🏀',t:'full'},
+   {n:'Толстая шкура',d:'15% шанс не получить урон от попадания',i:'🛡️',t:'xp'},
+   {n:'Глубокий карман',d:'+20% вместимость личного инвентаря',i:'👔',t:'full'}
+  ]}]},
+  {tier:6,branches:[{name:'Мастер',perks:[
+   {n:'Ночная сова',d:'Возможность видеть в темноте (NVG-эффект)',i:'🦉',t:'full'},
+   {n:'Запасные лёгкие',d:'+30% скорость восстановления выносливости',i:'🫁',t:'full'},
+   {n:'Порох вместо крови',d:'Кровопотеря не превышает критический уровень. Сердце бьётся пока есть дыхание. -20% шанс потерять дыхание',i:'💀',t:'full'}
+  ]}]}
+ ]},
+{key:'reflexes',name:'РЕФЛЕКСЫ',color:'#ffcc44',
+ tiers:[
+  {tier:0,branches:[{name:'Штурмовик',perks:[{n:'Мышечная память',d:'-25% смена оружия',i:'🔁',t:'visual'}, {n:'Быстрый выстрел',d:'Первый выстрел +10% точн.',i:'🎯',t:'full'}]}, {name:'Стрелок',perks:[{n:'Контроль спуск.',d:'Меньше отдача первого выст.',i:'🔫',t:'full'}, {n:'Перехват',d:'Быстрая смена цели',i:'⚡',t:'visual'}]}]},
+  {tier:1,branches:[{name:'Штурмовик II',perks:[{n:'Такт. перезарядка',d:'Быстрая перезарядка магазина',i:'📦',t:'visual'}, {n:'Контроль ствола',d:'Снижен разброс в движении',i:'🎯',t:'visual'}]}, {name:'Марксман',perks:[{n:'Контроль дыхания',d:'Больше задержка дыхания',i:'🌬️',t:'visual'}, {n:'Холодный расчёт',d:'Быстрее стабилизация после спринта',i:'🧊',t:'visual'}]}]},
+  {tier:2,branches:[{name:'Ас штурма',perks:[{n:'Пулемётная очередь',d:'-40% разброс автоматич.',i:'🔥',t:'full'}, {n:'Быстрая оценка',d:'Автоопределение дистанции',i:'📐',t:'xp'}]}, {name:'Снайпер',perks:[{n:'Пристрелка',d:'Мгновенная пристрелка',i:'🔭',t:'visual'}, {n:'Баллистический комп.',d:'Автомат. учёт ветра',i:'🌪️',t:'full'}]}]},
+  {tier:3,branches:[{name:'Элита штурмов.',perks:[{n:'Точный огонь',d:'Дабл-килл из одного магаз.',i:'💥',t:'full'}, {n:'Две руки',d:'Стрельба слева без штрафа',i:'🤲',t:'full'}]}, {name:'Элита снайп.',perks:[{n:'Один выстрел',d:'+30% урон первому выстрелу',i:'💀',t:'full'}, {n:'Фантом',d:'Меньше заметность стрельбы',i:'👻',t:'visual'}]}]},
+  {tier:4,branches:[{name:'Элита рефлексов',perks:[{n:'Молниеносный',d:'+25% скорость смены позиции',i:'⚡',t:'full'},{n:'Антишок',d:'Нет дезориентации от взрывов',i:'🧠',t:'full'}]},{name:'',perks:[]}]},
+  {tier:5,branches:[{name:'Мастер боя',perks:[{n:'Бог войны',d:'Нет разброса от спринта',i:'⚔️',t:'full'},{n:'Рефлексы бога',d:'Реакция на выстрелы -50%',i:'🦅',t:'full'}]},{name:'',perks:[]}]},
+  {tier:6,branches:[{name:'Легенда боя',perks:[{n:'Абсолютный глаз',d:'Все стрелковые бонусы активны',i:'👁️‍🗨️',t:'full'}]},{name:'',perks:[]}]}
+ ]},
+{key:'technical',name:'ТЕХНИКА',color:'#ff8833',
+ tiers:[
+  {tier:0,branches:[{name:'Инженерия',perks:[{n:'Полевой ремонт',d:'Ремонт x2 быстрее',i:'🔧',t:'xp'}, {n:'Базовый инструмент',d:'Быстрый ремонт шин',i:'🛠️',t:'xp'}]}, {name:'Сапёр',perks:[{n:'Сапёрная лопатка',d:'Быстрая установка мин',i:'💣',t:'xp'}, {n:'Наметанный глаз',d:'Больше радиус обнаружения',i:'👁️',t:'visual'}]}]},
+  {tier:1,branches:[{name:'Механик',perks:[{n:'Фортификатор',d:'Быстрые заграждения',i:'🏗️',t:'xp'}, {n:'Механик-водитель',d:'Меньше урона технике',i:'🚗',t:'visual'}]}, {name:'Сапёр II',perks:[{n:'Быстрое разминир.',d:'Безопасное обезвреживание',i:'💎',t:'xp'}, {n:'Скрытый лагерь',d:'Мины не обнаруживаются',i:'🕳️',t:'xp'}]}]},
+  {tier:2,branches:[{name:'Техник',perks:[{n:'Арсенал',d:'Ремонт техники +50% скорость',i:'🔩',t:'full'}, {n:'Электрик',d:'Быстрая починка электроники',i:'⚡',t:'xp'}]}, {name:'Подрывник',perks:[{n:'Цепная реакция',d:'Взрывы +30% радиус',i:'💥',t:'visual'}, {n:'Семтекс',d:'Клейкие заряды',i:'🧨',t:'full'}]}]},
+  {tier:3,branches:[{name:'Элита техник',perks:[{n:'Мобильный завод',d:'Ремонт на ходу',i:'🏭',t:'full'}, {n:'Броня Титана',d:'+20% HP всей технике',i:'🛡️',t:'full'}]}, {name:'Элита сапёр',perks:[{n:'Минное поле',d:'+50% количество мин',i:'🌾',t:'full'}, {n:'Эхо взрыва',d:'Мины дают обзор 50м',i:'📡',t:'xp'}]}]},
+  {tier:4,branches:[{name:'Элита техники',perks:[{n:'Полевой завод',d:'Создание боеприпасов из деталей',i:'🏭',t:'full'},{n:'Стальная воля',d:'Техника не теряет HP от мелких ударов',i:'🔩',t:'full'}]},{name:'',perks:[]}]},
+  {tier:5,branches:[{name:'Мастер техник',perks:[{n:'Техномант',d:'Ремонт без инструментов',i:'🤖',t:'full'},{n:'Крепость',d:'Все постройки +100% HP',i:'🏰',t:'full'}]},{name:'',perks:[]}]},
+  {tier:6,branches:[{name:'Легенда техники',perks:[{n:'Абсолютный инженер',d:'Все технические бонусы активны',i:'⚙️',t:'full'}]},{name:'',perks:[]}]}
+ ]},
+{key:'intelligence',name:'ИНТЕЛЛЕКТ',color:'#44aaff',
+ tiers:[
+  {tier:0,branches:[{name:'Медик',perks:[{n:'Жгут и бинт',d:'-30% наложение',i:'🩹',t:'full'}, {n:'Быстрая оценка',d:'Мгновенный осмотр',i:'🔍',t:'xp'}]}, {name:'Оператор',perks:[{n:'Аккумулятор БПЛА',d:'+50% время дронов',i:'🔋',t:'visual'}, {n:'Целеуказатель',d:'Дальняя лазерная подсветка',i:'🔴',t:'visual'}]}]},
+  {tier:1,branches:[{name:'Медик II',perks:[{n:'Фармацевт',d:'Эффективность препаратов +',i:'💊',t:'full'}, {n:'Реаниматолог',d:'Повышенный шанс СЛР',i:'❤️',t:'full'}]}, {name:'Связист',perks:[{n:'РЭБ',d:'Глушение GPS/радио 100м',i:'📡',t:'visual'}, {n:'Шифровальщик',d:'Перехват сообщений',i:'🔐',t:'xp'}]}]},
+  {tier:2,branches:[{name:'Хирург',perks:[{n:'Полевая операция',d:'Повреждения органов -50%',i:'💉',t:'full'}, {n:'Кровь',d:'Автотрансфузия',i:'🩸',t:'full'}]}, {name:'Аналитик',perks:[{n:'Спутниковый глаз',d:'Обзор +30% на весь отряд',i:'🛰️',t:'xp'}, {n:'Дешифратор',d:'Коды противника читаются',i:'📋',t:'full'}]}]},
+  {tier:3,branches:[{name:'Элита медик',perks:[{n:'Научный подход',d:'Препараты дают +100% эффект',i:'🧪',t:'full'}, {n:'Полевой госпиталь',d:'Быстрая зона лечения',i:'🏥',t:'full'}]}, {name:'Элита связь',perks:[{n:'Система РЭБ-II',d:'Полная блокировка сигналов',i:'🚫',t:'full'}, {n:'Сетевой центр',d:'Общий обзор для отряда 200м',i:'🌐',t:'full'}]}]},
+  {tier:4,branches:[{name:'Элита интеллекта',perks:[{n:'Тактический гений',d:'Отряд +15% точность при координации',i:'🗺️',t:'full'},{n:'Системный взлом',d:'Взлом техники противника на 30 сек',i:'🖥️',t:'full'}]},{name:'',perks:[]}]},
+  {tier:5,branches:[{name:'Мастер знаний',perks:[{n:'Медицинский гений',d:'Все медицинские бонусы max',i:'🧠',t:'full'},{n:'Кибер-войны',d:'Полный перехват техники',i:'💻',t:'full'}]},{name:'',perks:[]}]},
+  {tier:6,branches:[{name:'Легенда разума',perks:[{n:'Абсолютный интеллект',d:'Все бонусы знаний активны',i:'✨',t:'full'}]},{name:'',perks:[]}]}
+ ]},
+{key:'cool',name:'ВЫДЕРЖКА',color:'#aa55ff',
+ tiers:[
+  {tier:0,branches:[{name:'Призрак',perks:[{n:'Мягкий шаг',d:'Тише шаги в приседе',i:'👣',t:'visual'}, {n:'Слияние',d:'Замечают на 20% медленнее',i:'🌿',t:'visual'}]}, {name:'Стальные нервы',perks:[{n:'Подавление подавления',d:'-50% эффект подавления',i:'🧠',t:'full'}, {n:'Ясный ум',d:'Быстрое восстановление слуха',i:'🔔',t:'visual'}]}]},
+  {tier:1,branches:[{name:'Шпион',perks:[{n:'Ночной охотник',d:'Меньше ослепления ПНВ',i:'🌙',t:'visual'}, {n:'Двойник',d:'Обман ИИ противника',i:'🎭',t:'xp'}]}, {name:'Холоднокровный',perks:[{n:'Ледяное спокойствие',d:'Нет потери точности при ранении',i:'❄️',t:'full'}, {n:'Терпение хищника',d:'+100% время в засаде',i:'🐺',t:'xp'}]}]},
+  {tier:2,branches:[{name:'Тень',perks:[{n:'Невидимка',d:'Тепловизоры -50% обнаруж.',i:'👻',t:'full'}, {n:'Бесшумный',d:'Выстрелы заглушены',i:'🔇',t:'full'}]}, {name:'Монолит',perks:[{n:'Абсолютная воля',d:'Нет дезертирства',i:'🗿',t:'full'}, {n:'Хладнокровие',d:'Пульс 60 в бою',i:'💎',t:'visual'}]}]},
+  {tier:3,branches:[{name:'Элита теней',perks:[{n:'Призрак войны',d:'Полная невидимость стоя',i:'🌑',t:'full'}, {n:'Мираж',d:'Создание ложных целей',i:'🎪',t:'xp'}]}, {name:'Элита воли',perks:[{n:'Несокрушимый',d:'Иммунитет к панике',i:'⚓',t:'full'}, {n:'Демон',d:'Двойная точность при ранении',i:'😈',t:'full'}]}]},
+  {tier:4,branches:[{name:'Элита выдержки',perks:[{n:'Каменный взгляд',d:'Иммунитет к стрессовым эффектам',i:'🗿',t:'full'},{n:'Безмолвный охотник',d:'Полная тишина при движении в приседе',i:'🌑',t:'full'}]},{name:'',perks:[]}]},
+  {tier:5,branches:[{name:'Мастер тени',perks:[{n:'Вечная тень',d:'Все скрытности max',i:'🌚',t:'full'},{n:'Неуязвимый',d:'Все ментальные иммунитеты',i:'🔱',t:'full'}]},{name:'',perks:[]}]},
+  {tier:6,branches:[{name:'Легенда воли',perks:[{n:'Абсолютная выдержка',d:'Все бонусы выдержки активны',i:'🌟',t:'full'}]},{name:'',perks:[]}]}
+ ]}
+];
+
+// ── Система очков навыков (ОН) ──────────────────────────────────────────────
+// Тир 0 бесплатен. Тир N стоит TIER_OPEN_COST[N] ОН.
+// Перк в тире N стоит TIER_PERK_COST[N] ОН.
+// Условия открытия тира: (1) уровень атрибута >= TIER_LEVELS[N], (2) достаточно ОН, (3) предыдущий тир открыт.
+var UNLOCK_STATE={};
+PERK_DATA.forEach(function(attr){
+ UNLOCK_STATE[attr.key]={tiers:[true,false,false,false,false,false,false],perks:{}};
+});
+
+function getTotalSP(key){return Math.min(100,getSkillLevel(P.skills[key]||0));}
+function getSpentSP(key){
+ var s=UNLOCK_STATE[key],spent=0;
+ for(var i=1;i<s.tiers.length;i++){if(s.tiers[i])spent+=TIER_OPEN_COST[i];}
+ for(var pk in s.perks){if(s.perks[pk].unlocked)spent+=s.perks[pk].cost;}
+ return spent;
+}
+function getFreeSP(key){return getTotalSP(key)-getSpentSP(key);}
+function getAttrLevel(key){return getSkillLevel(P.skills[key]||0);}
+
+function canUnlockTier(key,tIdx){
+ var s=UNLOCK_STATE[key];
+ if(s.tiers[tIdx])return false; // уже открыт
+ if(tIdx>0&&!s.tiers[tIdx-1])return false; // предыдущий не открыт
+ if(getAttrLevel(key)<TIER_LEVELS[tIdx])return false; // уровень атрибута недостаточен
+ if(getFreeSP(key)<TIER_OPEN_COST[tIdx])return false; // нет ОН
+ return true;
+}
+
+function doUnlockTier(key,tIdx){
+ if(!canUnlockTier(key,tIdx))return;
+ UNLOCK_STATE[key].tiers[tIdx]=true;
+}
+
+function doUnlockPerkByIdx(key,tIdx,bIdx,pIdx){
+ var attr=null;
+ for(var a=0;a<PERK_DATA.length;a++){if(PERK_DATA[a].key===key){attr=PERK_DATA[a];break;}}
+ if(!attr)return;
+ var tierData=null;
+ for(var t=0;t<attr.tiers.length;t++){if(attr.tiers[t].tier===tIdx){tierData=attr.tiers[t];break;}}
+ if(!tierData)return;
+ var pname=tierData.branches[bIdx].perks[pIdx].n;
+ var s=UNLOCK_STATE[key];
+ var cost=TIER_PERK_COST[tIdx]||1;
+ if(s.perks[pname]&&s.perks[pname].unlocked)return;
+ if(!s.tiers[tIdx])return;
+ if(getFreeSP(key)<cost)return;
+ s.perks[pname]={unlocked:true,cost:cost};
+}
+// ────────────────────────────────────────────────────────────────────────────
+
+function refresh(){
+ P.level=parseInt(document.getElementById('ctrlLevel').value)||1;
+ P.xp=parseInt(document.getElementById('ctrlXP').value)||0;
+ P.name=document.getElementById('ctrlName').value||'Дед';
+ P.stats.kills=parseInt(document.getElementById('ctrlKills').value)||0;
+ P.stats.deaths=parseInt(document.getElementById('ctrlDeaths').value)||0;
+ P.stats.revives=parseInt(document.getElementById('ctrlRevives').value)||0;
+ P.stats.repairs=parseInt(document.getElementById('ctrlRepairs').value)||0;
+ P.stats.fortifications=parseInt(document.getElementById('ctrlForts').value)||0;
+ P.stats.vehiclesDestroyed=parseInt(document.getElementById('ctrlVehicles').value)||0;
+ P.stats.playtime=(parseInt(document.getElementById('ctrlPlaytime').value)||0)*3600;
+ P.skills.constitution=parseInt(document.getElementById('ctrlSkConstitution').value)||0;
+ P.skills.reflexes=parseInt(document.getElementById('ctrlSkReflexes').value)||0;
+ P.skills.technical=parseInt(document.getElementById('ctrlSkTechnical').value)||0;
+ P.skills.intelligence=parseInt(document.getElementById('ctrlSkIntelligence').value)||0;
+ P.skills.cool=parseInt(document.getElementById('ctrlSkCool').value)||0;
+
+ var lv=P.level,nx=getNextLevelXP(lv);
+ document.getElementById('xpText').textContent='ОПЫТ: '+P.xp+' / '+nx;
+ var rk=lv>=20?'ЛЕГЕНДА':lv>=15?'ГЕРОЙ':lv>=10?'ЭЛИТА':lv>=7?'ВЕТЕРАН':lv>=4?'ВОИН':'НОВОБРАНЕЦ';
+ document.getElementById('levelText').textContent='УРОВЕНЬ '+lv+'  '+rk;
+ P.totalXP=P.skills.constitution+P.skills.reflexes+P.skills.technical+P.skills.intelligence+P.skills.cool;
+ document.getElementById('totalXPText').textContent='Всего XP: '+P.totalXP;
+
+ var pv=lv>1?getNextLevelXP(lv-1):0,pr=(nx<=pv)?1:Math.max(0,Math.min(1,(P.xp-pv)/(nx-pv)));
+ document.getElementById('progressBar').style.width=(pr*100).toFixed(1)+'%';
+ document.getElementById('progressLabel').textContent=Math.floor(pr*100)+'%';
+
+ var aNames=['ОСНОВА','РЕФЛЕКСЫ','ТЕХНИКА','ИНТЕЛЛ.','ВЫДЕРЖКА'];
+ var aKeys=ATTR_KEYS;
+ for(var i=0;i<5;i++){
+  var xp=P.skills[aKeys[i]]||0,sc=Math.min(100,getSkillLevel(xp));
+  var t=getTier(sc);
+  document.getElementById('attr'+i).textContent=sc;
+  document.getElementById('mod'+i).textContent=TIER_NAMES[t];
+ }
+
+ var k=P.stats.kills,dt=P.stats.deaths;
+ document.getElementById('statKills').textContent=k;
+ document.getElementById('statDeaths').textContent=dt;
+ document.getElementById('statKD').textContent=(dt>0?((Math.floor((k/dt)*10)/10).toFixed(1)):''+k);
+ document.getElementById('statRevives').textContent=P.stats.revives;
+ document.getElementById('statRepairs').textContent=P.stats.repairs;
+ document.getElementById('statPlaytime').textContent=Math.round(P.stats.playtime/3600);
+
+ var sl=document.getElementById('skillList'),h='';
+ for(var i=0;i<5;i++){
+  var xp=P.skills[aKeys[i]]||0,sc=Math.min(100,getSkillLevel(xp)),f=Math.floor(sc/10),e=10-f;
+  var bf='';for(var j=0;j<f;j++)bf+='█';var be='';for(var j=0;j<e;j++)be+='░';
+  h+='<div class="skill-line"><span class="skill-name">'+aNames[i]+'</span><span class="skill-xp">Ур.'+sc+'</span><span class="skill-bar"><span class="filled">'+bf+'</span><span class="empty">'+be+'</span></span></div>';
+ }
+ h+='<div class="skill-footer"><span>Уничтожено техники: </span><span>'+P.stats.vehiclesDestroyed+'</span></div>';
+ sl.innerHTML=h;
+ document.getElementById('dialog').style.display='';
+}
+
+function openSkillTree(){document.getElementById('dialog').style.display='none';document.getElementById('skillTreeDialog').style.display='block';renderTabs();selectTab(0)}
+function closeSkillTree(){document.getElementById('skillTreeDialog').style.display='none';document.getElementById('dialog').style.display='block'}
+
+function renderTabs(){
+ var tabs=document.getElementById('stTabs');
+ var h='';
+ for(var a=0;a<PERK_DATA.length;a++){
+  var attr=PERK_DATA[a];
+  var unlocked=(UNLOCKED_ATTRS.indexOf(attr.key)!==-1);
+  var firstUnlocked=(a===0);
+  var xl=unlocked?(firstUnlocked?'st-tab active':'st-tab'):'st-tab';
+  var color=unlocked?attr.color:'rgba(150,150,150,0.4)';
+  var xp=P.skills[attr.key]||0;
+  var lvl=getSkillLevel(xp);
+  var t=unlocked?getTier(lvl):'-';
+  h+='<div class="'+xl+'" data-attr="'+a+'" style="color:'+color+'" onclick="selectTab('+a+')">'+attr.name+'<br><span style="font-size:0.55rem;font-weight:400">Ур.'+lvl+' | '+(unlocked?'Т.'+TIER_NAMES[t]:'—')+'</span></div>';
+ }
+ tabs.innerHTML=h;
+}
+
+function selectTab(idx){
+ document.querySelectorAll('.st-tab').forEach(function(t,i){t.classList.toggle('active',i===idx)});
+ var attr=PERK_DATA[idx];
+ var unlocked=(UNLOCKED_ATTRS.indexOf(attr.key)!==-1);
+ var xp=P.skills[attr.key]||0;
+ var lvl=getSkillLevel(xp);
+ var tier=getTier(lvl);
+ var nextLv=(tier<6)?TIER_LEVELS[tier+1]:TIER_LEVELS[6];
+ var nextTierXP=nextLv*1000;
+ var bonus=getSkillBonus(xp);
+ var bpct=Math.floor(bonus*100);
+ var body=document.getElementById('stBody');
+
+ if(!unlocked){
+  var h='<div style="display:flex;align-items:center;justify-content:center;height:200px;flex-direction:column;gap:10px">';
+  h+='<div style="font-size:2rem;font-weight:700;color:'+attr.color+'">'+attr.name+'</div>';
+  h+='<div style="font-size:0.95rem;color:rgba(255,204,51,0.7);font-weight:700">В РАЗРАБОТКЕ</div>';
+  h+='<div style="font-size:0.72rem;color:rgba(255,255,255,0.35)">Навыки этой категории будут добавлены в будущих обновлениях</div>';
+  h+='</div>';
+  body.innerHTML=h;
+  return;
+ }
+
+ var h='<div class="st-detail">';
+ h+='<div class="st-detail-header">';
+ h+='<div class="st-detail-name" style="color:'+attr.color+'">'+attr.name+'</div>';
+ h+='<div class="st-detail-level">Уровень '+lvl+' — XP: '+xp+' | Тир: <span style="color:'+TIER_COLORS[tier]+'">'+TIER_NAMES[tier]+'</span></div>';
+ h+='<div class="st-detail-bonus">Бонус XP: <span>+'+bpct+'%</span></div>';
+ var freeSP=getFreeSP(attr.key),totalSP=getTotalSP(attr.key),spentSP=getSpentSP(attr.key);
+ h+='<div style="margin:6px 0 2px;padding:5px 12px;background:rgba(255,255,255,0.05);border-radius:4px;display:flex;align-items:center;gap:10px">';
+ h+='<span style="font-size:0.62rem;color:rgba(255,255,255,0.5)">Очки навыков (ОН):</span>';
+ h+='<span style="font-size:1.15rem;font-weight:700;color:'+attr.color+'">'+freeSP+'</span>';
+ h+='<span style="font-size:0.58rem;color:rgba(255,255,255,0.35)">свободно &nbsp;|&nbsp; всего: '+totalSP+' &nbsp;|&nbsp; потрачено: '+spentSP+'</span>';
+ h+='</div>';
+ h+='</div>';
+
+ // Tier indicator bar (7 tiers 0-6)
+ var tierProgress=0;
+ if(tier<6){
+  var curXP=getXPForLevel(TIER_LEVELS[tier]);
+  var nextXP=getXPForLevel(TIER_LEVELS[tier+1]);
+  var tierRange=nextXP-curXP;
+  tierProgress=tierRange>0?Math.min(1,Math.max(0,(xp-curXP)/tierRange)):1;
+ } else {
+  tierProgress=1;
+ }
+
+ h+='<div style="display:flex;gap:2px;margin:8px 0 10px">';
+ for(var ti=0;ti<7;ti++){
+  var tDone=ti<tier;
+  var tActive=ti===tier;
+  var tLocked=ti>tier;
+  var tColor=tDone?TIER_COLORS[6]:TIER_COLORS[ti];
+  var tPct=tActive?Math.floor(tierProgress*100):(tDone?100:0);
+  h+='<div style="flex:1;text-align:center">';
+  h+='<div style="height:3px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden">';
+  h+='<div style="width:'+tPct+'%;height:100%;background:'+tColor+';transition:width 0.4s"></div></div>';
+  h+='<div style="font-size:0.35rem;color:'+(tLocked?'rgba(100,100,100,0.6)':TIER_COLORS[ti])+';margin-top:1px">';
+  h+='<b>'+TIER_NAMES[ti]+'</b><br>'+TIER_LEVELS[ti]+(TIER_LEVELS[ti+1]?'-'+TIER_LEVELS[ti+1]:'+');
+  h+='</div></div>';
+ }
+ h+='</div>';
+
+ // Render tiers (SP-based unlock, 7 tiers 0-6)
+ for(var ti=0;ti<attr.tiers.length;ti++){
+  var tierData=attr.tiers[ti];
+  var tIdx=tierData.tier;
+  if(tIdx>6)continue;
+  var tierUnlocked=UNLOCK_STATE[attr.key].tiers[tIdx];
+  var prevUnlocked=tIdx===0||UNLOCK_STATE[attr.key].tiers[tIdx-1];
+  var freeSPnow=getFreeSP(attr.key);
+  var attrLvlNow=getAttrLevel(attr.key);
+  var canOpen=canUnlockTier(attr.key,tIdx);
+  var perkCost=TIER_PERK_COST[tIdx]||1;
+  var openCost=TIER_OPEN_COST[tIdx]||0;
+
+  h+='<div style="margin-bottom:8px">';
+  // Tier header row
+  h+='<div style="display:flex;align-items:center;gap:6px;font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;padding:4px 8px;border-radius:4px;margin-bottom:4px;'+
+   (tierUnlocked?'color:'+TIER_COLORS[tIdx]+';background:'+TIER_COLORS[tIdx]+'18':'color:rgba(120,120,120,0.5);background:rgba(50,50,50,0.2)')+'">';
+  h+=(tierUnlocked?'✓ ':'')+'Тир '+TIER_NAMES[tIdx]+' (Ур.'+TIER_LEVELS[tIdx]+'+)';
+  if(!tierUnlocked&&tIdx>0){
+   // Показать причину блокировки если уровень атрибута не достигнут
+   var needLvl=TIER_LEVELS[tIdx];
+   var lvlOk=attrLvlNow>=needLvl;
+   var spOk=freeSPnow>=openCost;
+   var prevOk=prevUnlocked;
+   var reasonParts=[];
+   if(!prevOk)reasonParts.push('открыть предыдущий тир');
+   if(!lvlOk)reasonParts.push('ур.'+needLvl+' (сейчас '+attrLvlNow+')');
+   if(!spOk)reasonParts.push(openCost+' ОН (сейчас '+freeSPnow+')');
+   h+='<button onclick="doUnlockTier(\''+attr.key+'\','+tIdx+');refreshSkillTreeBody()" '+
+    'style="font-size:0.5rem;padding:2px 6px;cursor:'+(canOpen?'pointer':'default')+';'+
+    'background:'+(canOpen?'rgba(51,153,255,0.2)':'rgba(80,80,80,0.1)')+';'+
+    'border:1px solid '+(canOpen?'rgba(51,153,255,0.5)':'rgba(80,80,80,0.3)')+';'+
+    'border-radius:3px;color:'+(canOpen?'#3399ff':'rgba(120,120,120,0.4)')+'" '+
+    (canOpen?'':'disabled')+'>Открыть ('+openCost+' ОН)</button>';
+   if(!canOpen&&reasonParts.length){
+    h+='<span style="font-size:0.42rem;color:rgba(200,80,80,0.7)">Нужно: '+reasonParts.join(' + ')+'</span>';
+   }
+  }
+  h+='</div>';
+
+  if(tierUnlocked){
+   h+='<div class="st-branches-layout">';
+   for(var b=0;b<tierData.branches.length;b++){
+    var br=tierData.branches[b];
+    if(br.perks.length===0)continue;
+    h+='<div class="st-branch">';
+    h+='<div class="st-branch-header" style="color:'+attr.color+';background:rgba(255,255,255,0.04)">'+br.name+'</div>';
+    h+='<div class="st-perk-chain">';
+    for(var p=0;p<br.perks.length;p++){
+     var pk=br.perks[p];
+     var pState=UNLOCK_STATE[attr.key].perks[pk.n];
+     var pUnlocked=pState&&pState.unlocked;
+     var canTakePerk=!pUnlocked&&freeSPnow>=perkCost;
+     var bc=tBadge[pk.t]||'visual-badge';
+     h+='<div class="st-perk-node '+(pUnlocked?'unlocked':'locked')+'" data-n="'+pk.n+'" data-d="'+pk.d+'" data-t="'+pk.t+'">';
+     h+='<div class="st-perk-icon-wrap" style="'+(pUnlocked?'':'opacity:0.45')+'">'+pk.i+'</div>';
+     h+='<div class="st-perk-info">';
+     h+='<div class="st-perk-name">'+pk.n+(pUnlocked?' <span style="color:#44cc44;font-size:0.65rem">✓</span>':'')+'</div>';
+     h+='<div class="st-perk-desc">'+pk.d+'</div>';
+     h+='<div class="st-perk-meta">';
+     h+='<span class="st-perk-req">'+perkCost+' ОН</span>';
+     h+='<span class="st-perk-badge '+bc+'">'+tNames[pk.t]+'</span>';
+     if(!pUnlocked){
+      h+='<button onclick="doUnlockPerkByIdx(\''+attr.key+'\','+tIdx+','+b+','+p+');refreshSkillTreeBody()" '+
+       'style="font-size:0.5rem;padding:2px 5px;cursor:'+(canTakePerk?'pointer':'default')+';'+
+       'background:'+(canTakePerk?'rgba(68,204,68,0.2)':'rgba(80,80,80,0.1)')+';'+
+       'border:1px solid '+(canTakePerk?'rgba(68,204,68,0.5)':'rgba(80,80,80,0.3)')+';'+
+       'border-radius:3px;color:'+(canTakePerk?'#44cc44':'rgba(120,120,120,0.4)')+'" '+
+       (canTakePerk?'':'disabled')+'>Взять ('+perkCost+' ОН)</button>';
+     }
+     h+='</div></div></div>';
+    }
+    h+='</div></div>';
+   }
+   h+='</div>';
+  } else if(!prevUnlocked){
+   h+='<div style="text-align:center;padding:8px;opacity:0.3">';
+   h+='<div style="font-size:0.55rem;color:rgba(150,150,150,0.5)">🔒 Сначала откройте предыдущий тир</div></div>';
+  } else {
+   h+='<div style="text-align:center;padding:8px;opacity:0.25">';
+   h+='<div style="font-size:0.55rem;color:rgba(150,150,150,0.5)">🔒 Тир '+TIER_NAMES[tIdx]+' — требуется ур.'+TIER_LEVELS[tIdx]+' и '+openCost+' ОН</div></div>';
+  }
+  h+='</div>';
+ }
+
+ h+='</div>';
+ body.innerHTML=h;
+ document.querySelectorAll('.st-perk-node').forEach(function(el){
+  el.onmouseenter=function(ev){showTooltip(ev,this)};
+  el.onmouseleave=function(){hideTooltip()};
+ });
+}
+
+function refreshSkillTreeBody(){
+ var dialog=document.getElementById('skillTreeDialog');
+ if(dialog.style.display!=='block')return;
+ var activeIdx=0;
+ document.querySelectorAll('.st-tab.active').forEach(function(t){activeIdx=parseInt(t.getAttribute('data-attr'))});
+ renderTabs();
+ selectTab(activeIdx);
+}
+
+function showTooltip(ev,el){
+ var tt=document.getElementById('tooltip');
+ var name=el.getAttribute('data-n');
+ var desc=el.getAttribute('data-d');
+ var type=el.getAttribute('data-t');
+ var activeAttr=null;
+ document.querySelectorAll('.st-tab.active').forEach(function(t){
+  var idx=parseInt(t.getAttribute('data-attr'));
+  activeAttr=PERK_DATA[idx];
+ });
+ document.getElementById('ttTitle').textContent=name;
+ document.getElementById('ttDesc').textContent=desc;
+ document.getElementById('ttReq').textContent='Тип: '+tNames[type];
+ var st=document.getElementById('ttStatus');
+ st.textContent='РАЗБЛОКИРОВАНО';st.className='tt-status unlocked';
+ tt.classList.add('visible');
+ tt.style.left=Math.min(ev.clientX+10,window.innerWidth-270)+'px';
+ tt.style.top=(ev.clientY+10)+'px';
+}
+
+function hideTooltip(){document.getElementById('tooltip').classList.remove('visible')}
+
+document.addEventListener('mousemove',function(ev){
+ var tt=document.getElementById('tooltip');
+ if(tt.classList.contains('visible')){
+  tt.style.left=Math.min(ev.clientX+10,window.innerWidth-270)+'px';
+  tt.style.top=Math.min(ev.clientY+10,window.innerHeight-150)+'px';
+ }
+});
+
+function showXPN(xp,src){var p=document.getElementById('xpPopup');p.textContent='+'+xp+' XP'+(src?' ('+src+')':'');p.classList.add('show');setTimeout(function(){p.classList.remove('show')},2000)}
+
+function showLVLUp(nm,nl){
+ var f=document.getElementById('titleFlash');f.textContent=nm+' — ПОВЫШЕНИЕ УРОВНЯ!';f.classList.add('show');setTimeout(function(){f.classList.remove('show')},4000);
+ setTimeout(function(){var o=document.getElementById('notifOverlay');document.getElementById('notifTitle').textContent=nm+' — ПОВЫШЕНИЕ УРОВНЯ!';document.getElementById('notifMsg').textContent=nm+' достиг уровня '+nl+'!';o.classList.add('show');setTimeout(function(){o.classList.remove('show')},5000)},500);
+}
+
+function showSkillLvlUp(sname,sl){
+ var o=document.getElementById('notifOverlay');
+ document.getElementById('notifTitle').textContent='Навык повышен!';document.getElementById('notifTitle').style.color='#44cc44';
+ document.getElementById('notifMsg').textContent='Навык "'+sname+'" повышен до уровня '+sl+'!';
+ o.classList.add('show');
+ setTimeout(function(){o.classList.remove('show');document.getElementById('notifTitle').style.color='';},4000);
+}
+
+function addSkillXP(type,amt){
+ var oldL=getSkillLevel(P.skills[type]||0);
+ P.skills[type]=(P.skills[type]||0)+amt;
+ var newL=getSkillLevel(P.skills[type]);
+ if(newL>oldL){
+  var names={constitution:'Физиология',reflexes:'Рефлексы',technical:'Техника',intelligence:'Интеллект',cool:'Выдержка'};
+  showSkillLvlUp(names[type]||type,newL);
+ }
+ for(var k in P.skills){
+  var id='ctrlSk'+k.charAt(0).toUpperCase()+k.slice(1);
+  if(k==='cool')id='ctrlSkCool';
+  var el=document.getElementById(id);if(el)el.value=P.skills[k];
+ }
+ refresh();
+ refreshSkillTreeBody();
+}
+
+function addXPInternal(xp,src){
+ P.xp+=xp;P.totalXP+=xp;
+ var nx=getNextLevelXP(P.level);
+ if(P.xp>=nx){
+  while(P.level<100){var nx2=getNextLevelXP(P.level);if(P.xp>=nx2){P.level++;P.xp-=nx2;}else break;}
+  showLVLUp(P.name,P.level);
+ }
+ document.getElementById('ctrlLevel').value=P.level;
+ document.getElementById('ctrlXP').value=P.xp;
+ if(src)showXPN(xp,src);
+}
+
+var EVENTS={};
+
+// XP за переноску груза: < 20кг = 0, 20-40 = 5, 40-60 = 10, 60-80 = 20, 80-100 = 35, > 100 = 50
+function getCarryXP(kg){
+ if(kg<20)return 0;
+ if(kg<40)return 5;
+ if(kg<60)return 10;
+ if(kg<80)return 20;
+ if(kg<100)return 35;
+ return 50;
+}
+
+function simCarry(){
+ var kg=parseInt(document.getElementById('ctrlWeight').value)||0;
+ var xp=getCarryXP(kg);
+ if(xp<=0){showXPN(0,'Вес слишком лёгкий (<20кг)');return;}
+ addXPInternal(xp,'Груз '+kg+'кг');
+ addSkillXP('constitution',xp);
+}
+
+function simEvent(type){
+ var e=EVENTS[type];if(!e)return;
+ if(UNLOCKED_ATTRS.indexOf(e.skill)===-1)return;
+ addXPInternal(e.xp,e.s);
+ addSkillXP(e.skill,e.sa);
+ if(type==='kill'||type==='car'||type==='tank'||type==='air')P.stats.vehiclesDestroyed+=(type==='kill'?0:1);
+ if(type==='kill')P.stats.kills++;
+ if(type==='revive')P.stats.revives++;
+ if(type==='repair')P.stats.repairs++;
+ if(type==='fortify')P.stats.fortifications++;
+ refresh();
+}
+
+function levelUp(){
+ showLVLUp(P.name,P.level+1);P.level++;P.xp=0;
+ document.getElementById('ctrlLevel').value=P.level;document.getElementById('ctrlXP').value=0;
+ refresh();
+}
+
+refresh();
+</script>
+</body>
+</html>

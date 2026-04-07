@@ -1,82 +1,66 @@
 /*
-    RPG System - RscDefines
+    RPG System - RscDefines (DnD Card Style)
     Определения GUI элементов
 */
 
-// Цвета
-#define RPG_COLOR_PRIMARY [0.2, 0.6, 0.8, 1]
-#define RPG_COLOR_SECONDARY [0.1, 0.3, 0.4, 0.8]
-#define RPG_COLOR_TEXT [1, 1, 1, 1]
-#define RPG_COLOR_SUCCESS [0.2, 0.8, 0.2, 1]
-#define RPG_COLOR_WARNING [1, 0.8, 0.2, 1]
+// === Цветовая палитра пергамента DnD ===
+#define RPG_COLOR_PARCHMENT    {0.87, 0.80, 0.64, 0.97}
+#define RPG_COLOR_DARK_FRAME   {0.14, 0.09, 0.04, 1.00}
+#define RPG_COLOR_DARK_BANNER  {0.18, 0.11, 0.05, 1.00}
+#define RPG_COLOR_ATTR_BOX     {0.93, 0.87, 0.73, 1.00}
+#define RPG_COLOR_GOLD         {0.78, 0.62, 0.18, 1.00}
+#define RPG_COLOR_DARK_TEXT    {0.12, 0.07, 0.02, 1.00}
+#define RPG_COLOR_LIGHT_TEXT   {0.94, 0.89, 0.76, 1.00}
+#define RPG_COLOR_RED_HEADER   {0.55, 0.12, 0.12, 1.00}
 
-// Шрифты
+// Совместимость со старым кодом
+#define RPG_COLOR_PRIMARY      {0.55, 0.12, 0.12, 1.00}
+#define RPG_COLOR_SECONDARY    {0.87, 0.80, 0.64, 0.97}
+#define RPG_COLOR_TEXT         {0.12, 0.07, 0.02, 1.00}
+#define RPG_COLOR_SUCCESS      {0.20, 0.55, 0.20, 1.00}
+#define RPG_COLOR_WARNING      {0.78, 0.62, 0.18, 1.00}
+
+// === Шрифт ===
 #define RPG_FONT "RobotoCondensed"
 
-// Размеры
-#define RPG_TITLE_SIZE 0.05
-#define RPG_TEXT_SIZE 0.04
-#define RPG_BUTTON_SIZE 0.04
+// === Размеры ===
+#define RPG_TITLE_SIZE   0.030
+#define RPG_NAME_SIZE    0.050
+#define RPG_SECTION_SIZE 0.026
+#define RPG_TEXT_SIZE    0.024
+#define RPG_SMALL_SIZE   0.020
+#define RPG_BUTTON_SIZE  0.026
 
-// Базовые классы
-class RscText {
-    idc = -1;
-    type = 0;
-    style = 0;
+// Forward-declaration базовых классов A3_UI_F
+class RscText;
+class RscStructuredText;
+class RscProgress;
+class RscButtonMenu;
+
+class RPG_RscText: RscText {
+    font = RPG_FONT;
+    sizeEx = RPG_TEXT_SIZE;
     colorBackground[] = {0, 0, 0, 0};
-    colorText[] = {1, 1, 1, 1};
-    font = RPG_FONT;
-    sizeEx = 0.04;
-    h = 0.04;
-    text = "";
 };
 
-class RscStructuredText {
-    idc = -1;
-    type = 13;
-    style = 0;
-    colorText[] = {1, 1, 1, 1};
+class RPG_RscStructuredText: RscStructuredText {
     font = RPG_FONT;
-    size = 0.04;
-    text = "";
-    
-    class Attributes {
-        font = RPG_FONT;
-        color = "#ffffff";
-        align = "left";
-        shadow = 1;
-    };
+    size = RPG_TEXT_SIZE;
 };
 
-class RscProgress {
-    idc = -1;
-    type = 8;
-    style = 0;
-    colorBackground[] = {0, 0, 0, 0.5};
-    colorFrame[] = {1, 1, 1, 1};
-    texture = "#(argb,8,8,3)color(1,1,1,1)";
+class RPG_RscProgress: RscProgress {
+    colorBackground[] = {0.82, 0.75, 0.58, 1.0};
+    colorFrame[] = RPG_COLOR_RED_HEADER;
+    texture = "#(argb,8,8,3)color(0.55,0.12,0.12,1)";
 };
 
-class RscButtonMenu {
-    idc = -1;
-    type = 16;
-    style = "0x02 + 0xC0";
-    default = 0;
-    shadow = 1;
+class RPG_RscButtonMenu: RscButtonMenu {
     font = RPG_FONT;
-    sizeEx = 0.04;
-    colorBackground[] = {0.2, 0.6, 0.8, 1};
-    colorBackgroundActive[] = {0.3, 0.7, 0.9, 1};
-    colorBackgroundDisabled[] = {0.1, 0.1, 0.1, 1};
-    colorText[] = {1, 1, 1, 1};
-    colorTextActive[] = {1, 1, 1, 1};
+    sizeEx = RPG_BUTTON_SIZE;
+    colorBackground[] = RPG_COLOR_DARK_BANNER;
+    colorBackgroundActive[] = {0.35, 0.08, 0.08, 1.00};
+    colorBackgroundDisabled[] = {0.10, 0.10, 0.10, 1.00};
+    colorText[] = RPG_COLOR_LIGHT_TEXT;
+    colorTextActive[] = RPG_COLOR_GOLD;
     colorTextDisabled[] = {0.5, 0.5, 0.5, 1};
-    colorShadow[] = {0, 0, 0, 0};
-    colorBorder[] = {0, 0, 0, 0};
-    soundEnter[] = {"\A3\ui_f\data\sound\RscButtonMenu\soundEnter", 0.09, 1};
-    soundPush[] = {"\A3\ui_f\data\sound\RscButtonMenu\soundPush", 0.09, 1};
-    soundClick[] = {"\A3\ui_f\data\sound\RscButtonMenu\soundClick", 0.09, 1};
-    soundEscape[] = {"\A3\ui_f\data\sound\RscButtonMenu\soundEscape", 0.09, 1};
-    text = "";
-    action = "";
 };

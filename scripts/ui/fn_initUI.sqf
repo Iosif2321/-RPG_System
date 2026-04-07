@@ -113,7 +113,7 @@ RPG_fnc_updateRPGMenu = {
 RPG_fnc_createXPNotification = {
     params ["_player", "_xpAmount", "_source"];
     
-    [_player, _xpAmount, _source] remoteExec ["RPG_fnc_showXPNotificationClient", _player, false];
+    [_xpAmount, _source] remoteExec ["RPG_fnc_showXPNotificationClient", _player, false];
 };
 
 // Клиентская функция показа уведомления об XP (выполняется на клиенте)
@@ -135,7 +135,7 @@ RPG_fnc_showXPNotificationClient = {
 RPG_fnc_showLevelUpNotification = {
     params ["_player", "_newLevel", "_levelsGained"];
     
-    [_player, _newLevel, _levelsGained] remoteExec ["RPG_fnc_showLevelUpNotificationClient", _player, false];
+    [name _player, _newLevel, _levelsGained] remoteExec ["RPG_fnc_showLevelUpNotificationClient", _player, false];
 };
 
 // Клиентская функция показа уведомления о повышении уровня

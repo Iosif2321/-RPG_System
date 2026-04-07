@@ -1,14 +1,17 @@
 #include "ui\RscDefines.hpp"
-#include "ui\RscDialogs.hpp"
+
+class RscTitles {
+    #include "ui\RscDialogs.hpp"
+};
 
 class CfgPatches {
     class RPG_System {
         units[] = {};
         weapons[] = {};
         requiredVersion = 1.0;
-        requiredAddons[] = {"A3_Data", "A3_UI_F"};
+        requiredAddons[] = {"A3_Data_F", "A3_UI_F"};
         author = "Server Admin";
-        version = "1.0.0";
+        version = "2.0.0";
     };
 };
 
@@ -35,6 +38,7 @@ class CfgFunctions {
             class getLevel {};
             class getNextLevelXP {};
             class getProgressToNextLevel {};
+            class checkLevelUp {};
         };
 
         class Skills {
@@ -46,6 +50,9 @@ class CfgFunctions {
             class getSkillLevel {};
             class getSkillBonus {};
             class onSkillLevelUp {};
+            class showSkillLevelUpClient {};
+            class openSkillTree {};
+            class updateSkillTree {};
         };
 
         class Events {
@@ -63,6 +70,7 @@ class CfgFunctions {
             class onACEMedical {};
             class onACERepair {};
             class onACEReload {};
+            class onACEFortify {};
         };
 
         class UI {

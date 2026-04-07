@@ -1,7 +1,4 @@
-#include "ui\RscDefines.hpp"
-#include "ui\RscDialogs.hpp"
-
-class CfgPatches {
+﻿class CfgPatches {
     class RPG_System {
         units[] = {};
         weapons[] = {};
@@ -23,7 +20,7 @@ class CfgFunctions {
             class setPlayerData {};
             class updateXP {};
         };
-        
+
         class XP {
             file = "\RPG_System\scripts\xp";
             class initXPSystem {};
@@ -33,7 +30,7 @@ class CfgFunctions {
             class getNextLevelXP {};
             class getProgressToNextLevel {};
         };
-        
+
         class Events {
             file = "\RPG_System\scripts\events";
             class initEventHandlers {};
@@ -42,7 +39,7 @@ class CfgFunctions {
             class onVehicleDestroyed {};
             class onEntityKilled {};
         };
-        
+
         class ACE {
             file = "\RPG_System\scripts\ace";
             class initACEIntegration {};
@@ -50,7 +47,7 @@ class CfgFunctions {
             class onACERepair {};
             class onACEReload {};
         };
-        
+
         class UI {
             file = "\RPG_System\scripts\ui";
             class initUI {};
@@ -59,7 +56,7 @@ class CfgFunctions {
             class updateRPGMenu {};
             class createXPNotification {};
         };
-        
+
         class Skills {
             file = "\RPG_System\scripts\skills";
             class initSkills {};
@@ -67,6 +64,8 @@ class CfgFunctions {
             class setSkill {};
             class addSkillXP {};
             class getSkillLevel {};
+            class applyPassivePerks {};
+            class unlockPerk {};
         };
     };
 };

@@ -160,11 +160,7 @@ RPG_fnc_checkLevelUp = {
         
         // Уведомляем всех игроков
         private _playerName = name _player;
-        // BIS_fnc_mp устарел — используем remoteExec
         [_playerName, _currentLevel, _levelUps] remoteExec ["RPG_fnc_showLevelUpNotificationClient", 0, false];
-        
-        // Показываем специальное уведомление
-        [_player, _currentLevel, _levelUps] call RPG_fnc_showLevelUpNotification;
         
         diag_log format ["[RPG] Player %1 leveled up to %2!", name _player, _currentLevel];
     };
