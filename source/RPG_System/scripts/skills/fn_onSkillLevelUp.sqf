@@ -6,6 +6,11 @@
 params ["_player", "_skillType", "_newLevel"];
 
 private _skillNames = createHashMap;
+_skillNames set ["constitution", "Физиология"];
+_skillNames set ["reflexes", "Рефлексы"];
+_skillNames set ["technical", "Техника"];
+_skillNames set ["intelligence", "Интеллект"];
+_skillNames set ["cool", "Выдержка"];
 _skillNames set ["medical", "Медицина"];
 _skillNames set ["repair", "Ремонт"];
 _skillNames set ["combat", "Бой"];

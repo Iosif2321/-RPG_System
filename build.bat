@@ -1,21 +1,23 @@
 @echo off
 setlocal EnableDelayedExpansion
 
-:: Деактивируем venv если активен
 if defined VIRTUAL_ENV (
     call deactivate 2>nul
 )
 
-:: Путь к AddonBuilder — проверяем несколько вариантов
+set "TOOLS_DIR="
 set "BUILDER="
 
 if exist "C:\Program Files (x86)\Steam\steamapps\common\Arma 3 Tools\AddonBuilder\AddonBuilder.exe" (
+    set "TOOLS_DIR=C:\Program Files (x86)\Steam\steamapps\common\Arma 3 Tools"
     set "BUILDER=C:\Program Files (x86)\Steam\steamapps\common\Arma 3 Tools\AddonBuilder\AddonBuilder.exe"
 )
 if not defined BUILDER if exist "D:\Steam\steamapps\common\Arma 3 Tools\AddonBuilder\AddonBuilder.exe" (
+    set "TOOLS_DIR=D:\Steam\steamapps\common\Arma 3 Tools"
     set "BUILDER=D:\Steam\steamapps\common\Arma 3 Tools\AddonBuilder\AddonBuilder.exe"
 )
 if not defined BUILDER if exist "D:\SteamLibrary\steamapps\common\Arma 3 Tools\AddonBuilder\AddonBuilder.exe" (
+    set "TOOLS_DIR=D:\SteamLibrary\steamapps\common\Arma 3 Tools"
     set "BUILDER=D:\SteamLibrary\steamapps\common\Arma 3 Tools\AddonBuilder\AddonBuilder.exe"
 )
 
@@ -44,9 +46,10 @@ echo [RPG_System] Building PBO...
 echo   Source  : "%SOURCE%"
 echo   Output  : "%DEST%"
 echo   Builder : "%BUILDER%"
+echo   Tools   : "%TOOLS_DIR%"
 echo.
 
-"%BUILDER%" "%SOURCE%" "%DEST%" -clear -packonly
+"%BUILDER%" "%SOURCE%" "%DEST%" -clear -packonly -toolsDirectory="%TOOLS_DIR%"
 
 if !ERRORLEVEL! EQU 0 (
     echo.

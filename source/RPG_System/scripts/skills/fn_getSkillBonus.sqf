@@ -6,7 +6,7 @@
 params ["_player", "_skillType"];
 
 private _skillXP = [_player, _skillType] call RPG_fnc_getSkill;
-private _level = [_skillXP] call RPG_fnc_getSkillLevel;
+private _level = floor (_skillXP / 1000) max 0;
 
 // Ищем бонус для из таблицы (уровни 0-10)
 private _bonus = 0;

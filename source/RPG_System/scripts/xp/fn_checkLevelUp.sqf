@@ -25,6 +25,10 @@ while {_currentLevel < _maxLevel} do {
 if (_levelUps > 0) then {
     _data set ["level", _currentLevel];
 
+    if (!isNil "RPG_fnc_syncPlayerPerks") then {
+        [_player] call RPG_fnc_syncPlayerPerks;
+    };
+
     private _playerName = name _player;
     [_playerName, _currentLevel, _levelUps] remoteExec ["RPG_fnc_showLevelUpNotificationClient", 0, false];
 

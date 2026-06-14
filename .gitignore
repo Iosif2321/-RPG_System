@@ -1,30 +1,54 @@
-# Backup Files
-*.bak
-*.backup
+# Local agent and assistant workspaces
+.codex/
+.agents/
+.claude/worktrees/
 
-# Log Files
-*.rpt
-*.log
+# Generated prototypes and design artifacts
+visuals/
+PERKS_CONSTITUTION.md
 
-# Temporary Files
-*.tmp
-*.temp
-
-# OS Files
+# OS files
 .DS_Store
 Thumbs.db
 desktop.ini
 
-# Editor Files
+# Editor and IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+*.tmp
+*.temp
+*~
+
+# SQF/config backup files
+*.bak
+*.backup
 *.sqm~
 *.sqf~
 config.cpp~
 
-# Build artifacts
+# Logs and Arma crash dumps
+*.log
+*.rpt
+*.bidmp
+*.mdmp
+
+# Arma Tools temporary output
 build/
 release/
+temp/
+tmp/
+*.pbo.tmp
+
+# Archives and packaged exports
 *.zip
 *.rar
+*.7z
 
-# Private profile data (optional - uncomment if needed)
-# *.vars
+# Private signing keys
+*.biprivatekey
+*.privatekey
+
+# Private profile data
+*.vars

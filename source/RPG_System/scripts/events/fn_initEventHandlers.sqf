@@ -6,9 +6,9 @@
     Версия: 2.0.0
 */
 
-RPG_EventHandlers_Initialized = false;
-
-if (RPG_EventHandlers_Initialized) exitWith {};
+if (!isServer) exitWith {};
+if (missionNamespace getVariable ["RPG_EventHandlers_Initialized", false]) exitWith {};
+missionNamespace setVariable ["RPG_EventHandlers_Initialized", true];
 
 diag_log "[RPG] Initializing event handlers...";
 
@@ -63,5 +63,4 @@ addMissionEventHandler ["EntityRespawned", {
 
 [] spawn RPG_fnc_startPlaytimeTracker;
 
-RPG_EventHandlers_Initialized = true;
 diag_log "[RPG] Event handlers initialized";

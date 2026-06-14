@@ -11,12 +11,30 @@ private _player = uiNamespace getVariable ["RPG_CurrentPlayer", player];
 if (isNull _player) exitWith {};
 
 private _playerID = getPlayerUID _player;
-private _data     = [_playerID] call RPG_fnc_getPlayerData;
 
-private _level  = _data get "level";
-private _xp     = _data get "xp";
-private _stats  = _data get "stats";
-private _skills = _data get "skills";
+private _level  = _player getVariable ["RPG_Level", 1];
+private _xp     = _player getVariable ["RPG_XP", 0];
+private _stats  = _player getVariable ["RPG_Stats", createHashMap];
+private _skills = _player getVariable ["RPG_Skills", createHashMap];
+private _attributePairs = _player getVariable ["RPG_AttributeLevels", []];
+private _perkPoints = _player getVariable ["RPG_PerkPoints", [0, 0, 0, 0, 0, 0]];
+private _bonusSkillPoints = _perkPoints param [5, 0];
+private _theme = [] call RPG_fnc_getUITheme;
+private _accentHex = _theme getOrDefault ["accentHex", "#C79E2E"];
+private _textHex = _theme getOrDefault ["textHex", "#F2E3C2"];
+private _mutedHex = _theme getOrDefault ["mutedHex", "#A3B8C2"];
+private _dangerHex = _theme getOrDefault ["dangerHex", "#D36B6B"];
+
+private _fnTreeLevel = {
+    params ["_treeKey", "_pairs"];
+    private _level = 0;
+    {
+        if ((_x param [0, ""]) == _treeKey) exitWith {
+            _level = _x param [1, 0];
+        };
+    } forEach _pairs;
+    _level
+};
 
 // ─── Ранг по уровню (DnD-стиль) ─────────────────────────────────────────────
 private _rank = switch (true) do {
@@ -49,22 +67,22 @@ if (!isNull _ctrlLevel) then {
 
 private _ctrlBar = _display displayCtrl 1003;
 if (!isNull _ctrlBar) then {
-    private _progress = [_player] call RPG_fnc_getProgressToNextLevel;
+    private _prevLevelXP = if (_level > 1) then {[_level - 1] call RPG_fnc_getNextLevelXP} else {0};
+    private _progress = if (_nextXP <= _prevLevelXP) then {1} else {(((_xp - _prevLevelXP) / (_nextXP - _prevLevelXP)) max 0) min 1};
     _ctrlBar progressSetPosition _progress;
 };
 
 // ─── Атрибуты (IDC 1010-1014) ───────────────────────────────────
-// Очки атрибута: floor(skillXP / 250), max 20 — как в D&D (шкала 0–20)
-// Модификатор: floor((score - 10) / 2) — как в D&D 5e
+// Уровень дерева покупается очками навыков, XP только выдаёт новые очки.
 
 private _fnAttr = {
-    params ["_skillXP", "_label"];
-    private _score = (floor (_skillXP / 250)) min 20;
+    params ["_score", "_label"];
+    _score = _score min RPG_TREE_MAX_LEVEL;
     private _mod   = floor ((_score - 10) / 2);
     private _modStr = if (_mod >= 0) then { format ["+%1", _mod] } else { str _mod };
     parseText format [
-        "<t align='center' size='2.0' color='#1E0B04'>%1</t><br/><t align='center' size='0.90' color='#851414'>%2</t><br/><t align='center' size='0.80' color='#1E0B04'>%3</t>",
-        _score, _modStr, _label
+        "<t align='center' size='1.85' color='%4' shadow='1'>%1</t><br/><t align='center' size='0.86' color='%5' shadow='1'>%2</t><br/><t align='center' size='0.76' color='%4' shadow='1'>%3</t>",
+        _score, _modStr, _label, _textHex, _dangerHex
     ]
 };
 
@@ -74,11 +92,11 @@ private _fnAttr = {
         _ctrl ctrlSetStructuredText ([(_x select 1), (_x select 2)] call _fnAttr);
     };
 } forEach [
-    [1010, _skills getOrDefault ["constitution", 0],  "ФИЗИОЛОГИЯ" ],
-    [1011, _skills getOrDefault ["reflexes", 0],      "РЕФЛЕКСЫ"   ],
-    [1012, _skills getOrDefault ["technical", 0],     "ТЕХНИКА"    ],
-    [1013, _skills getOrDefault ["intelligence", 0],  "ИНТЕЛЛЕКТ"  ],
-    [1014, _skills getOrDefault ["cool", 0],          "ВЫДЕРЖКА"   ]
+    [1010, ["constitution", _attributePairs] call _fnTreeLevel,  "ФИЗИОЛОГИЯ" ],
+    [1011, ["reflexes", _attributePairs] call _fnTreeLevel,      "РЕФЛЕКСЫ"   ],
+    [1012, ["technical", _attributePairs] call _fnTreeLevel,     "ТЕХНИКА"    ],
+    [1013, ["intelligence", _attributePairs] call _fnTreeLevel,  "ИНТЕЛЛЕКТ"  ],
+    [1014, ["cool", _attributePairs] call _fnTreeLevel,          "ВЫДЕРЖКА"   ]
 ];
 
 // ─── Боевая статистика — секция 1 (красная) ──────────────────────────────────
@@ -126,8 +144,8 @@ private _fnXPLine = {
     for "_i" from 1 to _filled do { _barFill  = _barFill  + "█"; };
     for "_i" from 1 to _empty  do { _barEmpty = _barEmpty + "░"; };
     format [
-        "<t color='#10396B'>%-12s</t>  <t color='#1E0B04'>%2 XP</t>  <t color='#851414'>%3</t><t color='#BFAE8A'>%4</t>",
-        _label, _skillXP, _barFill, _barEmpty
+        "<t color='%5' shadow='1'>%1</t>  <t color='%6' shadow='1'>%2 XP</t>  <t color='%7' shadow='1'>%3</t><t color='%8'>%4</t>",
+        _label, _skillXP, _barFill, _barEmpty, _accentHex, _textHex, _dangerHex, _mutedHex
     ]
 };
 
@@ -142,8 +160,22 @@ if (!isNull _ctrlSkills) then {
         ["ВЫДЕРЖКА",   _skills getOrDefault ["cool",         0]] call _fnXPLine
     ];
     private _footer = format [
-        "<br/><t color='#10396B'>Уничтожено техники: </t><t color='#1E0B04'>%1</t>",
-        _vehDestroyed
+        "<br/><t color='#10396B'>Уничтожено техники: </t><t color='#1E0B04'>%1</t><br/><t color='#10396B'>Очки навыков: </t><t color='#1E0B04'>%2 свободно / %3 всего / %4 максимум уровня / %5 бонус</t>",
+        _vehDestroyed,
+        _perkPoints param [2, 0],
+        _perkPoints param [0, 0],
+        RPG_MAX_SKILL_POINTS,
+        _bonusSkillPoints
+    ];
+    _footer = format [
+        "<br/><t color='%6'>Vehicles destroyed: </t><t color='%7'>%1</t><br/><t color='%6'>Skill points: </t><t color='%7'>%2 free / %3 total / %4 level cap / %5 bonus</t>",
+        _vehDestroyed,
+        _perkPoints param [2, 0],
+        _perkPoints param [0, 0],
+        RPG_MAX_SKILL_POINTS,
+        _bonusSkillPoints,
+        _accentHex,
+        _textHex
     ];
     _ctrlSkills ctrlSetStructuredText parseText ((_lines joinString "<br/>") + _footer);
 };

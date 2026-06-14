@@ -6,6 +6,8 @@
 
 if (!hasInterface) exitWith {};
 
+[] call RPG_fnc_initXPSystem;
+[] call RPG_fnc_initSkills;
 [] call RPG_fnc_initUI;
 
 // Вешаем горячую клавишу F7 на дисплей игры (IDD 46 — основной HUD)
@@ -37,6 +39,33 @@ if (!hasInterface) exitWith {};
 
     missionNamespace setVariable ["RPG_KeyDown_EH", _eh];
     diag_log "[RPG] F7 hotkey registered";
+};
+
+// Инициализируем клиентские системы после готовности игрока
+[] spawn {
+    waitUntil { !isNull player };
+    waitUntil { alive player };
+
+    [player] remoteExecCall ["RPG_fnc_syncPlayerPerks", 2, false];
+
+    private _deadline = time + 15;
+    waitUntil {
+        !isNil { player getVariable "RPG_UnlockedPerks" } || {time > _deadline}
+    };
+
+    if (isNil { player getVariable "RPG_UnlockedPerks" }) then {
+        player setVariable ["RPG_UnlockedPerks", [], false];
+        player setVariable ["RPG_AttributeLevels", [], false];
+        player setVariable ["RPG_PerkPoints", [0, 0, 0, 0, 0, 0], false];
+        player setVariable ["RPG_Level", 1, false];
+        player setVariable ["RPG_XP", 0, false];
+        player setVariable ["RPG_Stats", createHashMap, false];
+        player setVariable ["RPG_Skills", createHashMap, false];
+        diag_log "[RPG] Perk sync timeout, client started with empty perk state";
+    };
+
+    [] call RPG_fnc_initPerks;
+    [] call RPG_fnc_initLoadXP;             // XP за переноску груза
 };
 
 diag_log "[RPG] Client UI initialized";

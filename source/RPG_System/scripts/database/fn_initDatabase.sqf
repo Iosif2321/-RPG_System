@@ -42,6 +42,7 @@ RPG_fnc_createNewPlayerData = {
     _data set ["xp", 0];
     _data set ["level", 1];
     _data set ["totalXP", 0];
+    _data set ["bonusSkillPoints", 0];
 
     // Новые атрибуты (Cyberpunk 2077 стиль)
     private _skills = createHashMap;
@@ -51,6 +52,14 @@ RPG_fnc_createNewPlayerData = {
     _skills set ["intelligence", 0];
     _skills set ["cool", 0];
     _data set ["skills", _skills];
+
+    private _attributeLevels = createHashMap;
+    _attributeLevels set ["constitution", 0];
+    _attributeLevels set ["reflexes", 0];
+    _attributeLevels set ["technical", 0];
+    _attributeLevels set ["intelligence", 0];
+    _attributeLevels set ["cool", 0];
+    _data set ["attributeLevels", _attributeLevels];
 
     // Выбранные специализации: "reflexes_3" → "assault"
     _data set ["specializations", createHashMap];
@@ -72,9 +81,66 @@ RPG_fnc_createNewPlayerData = {
     _data
 };
 
+RPG_fnc_ensurePlayerDataShape = {
+    params ["_data"];
+
+    if (isNil "_data" || {!(_data isEqualType createHashMap)}) exitWith {createHashMap};
+
+    if (isNil { _data get "xp" }) then { _data set ["xp", 0]; };
+    if (isNil { _data get "level" }) then { _data set ["level", 1]; };
+    if (isNil { _data get "totalXP" }) then { _data set ["totalXP", 0]; };
+    if (isNil { _data get "bonusSkillPoints" }) then { _data set ["bonusSkillPoints", 0]; };
+    _data set ["bonusSkillPoints", ((_data getOrDefault ["bonusSkillPoints", 0]) max 0)];
+
+    private _skills = _data getOrDefault ["skills", createHashMap];
+    if (!(_skills isEqualType createHashMap)) then { _skills = createHashMap; };
+    {
+        if (isNil { _skills get _x }) then { _skills set [_x, 0]; };
+    } forEach ["constitution", "reflexes", "technical", "intelligence", "cool"];
+    _data set ["skills", _skills];
+
+    private _attributeLevels = _data getOrDefault ["attributeLevels", createHashMap];
+    if (!(_attributeLevels isEqualType createHashMap)) then { _attributeLevels = createHashMap; };
+    {
+        private _value = _attributeLevels getOrDefault [_x, 0];
+        _attributeLevels set [_x, (_value max 0) min 20];
+    } forEach ["constitution", "reflexes", "technical", "intelligence", "cool"];
+    _data set ["attributeLevels", _attributeLevels];
+
+    if (isNil { _data get "specializations" }) then { _data set ["specializations", createHashMap]; };
+
+    private _perks = _data getOrDefault ["perks", []];
+    if (!(_perks isEqualType [])) then { _perks = []; };
+    _data set ["perks", _perks arrayIntersect _perks];
+
+    private _stats = _data getOrDefault ["stats", createHashMap];
+    if (!(_stats isEqualType createHashMap)) then { _stats = createHashMap; };
+    {
+        if (isNil { _stats get _x }) then { _stats set [_x, 0]; };
+    } forEach [
+        "kills",
+        "deaths",
+        "revives",
+        "repairs",
+        "vehiclesDestroyed",
+        "fortifications",
+        "refuels",
+        "rearmerActions",
+        "explosives",
+        "playtime"
+    ];
+    _data set ["stats", _stats];
+
+    if (isNil { _data get "lastSave" }) then { _data set ["lastSave", diag_tickTime]; };
+
+    _data
+};
+
 // ─── Миграция старых навыков в новые атрибуты ────────────
 RPG_fnc_migrateOldSkills = {
     params ["_data"];
+    [_data] call RPG_fnc_ensurePlayerDataShape;
+
     private _skills = _data get "skills";
 
     // Ключи старых навыков
@@ -109,9 +175,10 @@ RPG_fnc_migrateOldSkills = {
     _skills set ["cool", _skills getOrDefault ["cool", 0]];
 
     // Удаляем старые ключи
-    { _skills delete _x; } forEach _oldKeys;
+    { _skills deleteAt _x; } forEach _oldKeys;
 
     _data set ["skills", _skills];
+    [_data] call RPG_fnc_ensurePlayerDataShape;
 
     diag_log format ["[RPG] Migrated old skills: combat=%1→reflexes, medical=%2+%3→intelligence, repair=%4+eng=%5→technical",
         _combatXP, _medicalXP, _supportXP, _repairXP, _engXP];
@@ -127,6 +194,7 @@ if (_savedData isEqualType createHashMap) then {
     {
         private _data = _x;
         [_data] call RPG_fnc_migrateOldSkills;
+        [_data] call RPG_fnc_ensurePlayerDataShape;
     } forEach (RPG_DB_PLAYERS values);
 
     diag_log format ["[RPG] Database loaded with %1 players", count RPG_DB_PLAYERS];
@@ -137,6 +205,7 @@ if (_savedData isEqualType createHashMap) then {
             if (count _x >= 2) then {
                 private _playerID = _x select 0;
                 private _playerData = _x select 1;
+                [_playerData] call RPG_fnc_ensurePlayerDataShape;
                 RPG_DB_PLAYERS set [_playerID, _playerData];
                 [_playerData] call RPG_fnc_migrateOldSkills;
             };

@@ -12,4 +12,8 @@ params ["_player"];
 private _playerID = getPlayerUID _player;
 private _data = [_playerID] call RPG_fnc_getPlayerData;
 
+if (!isNil "RPG_fnc_syncPlayerPerks") then {
+    [_player] call RPG_fnc_syncPlayerPerks;
+};
+
 diag_log format ["[RPG] Player %1 respawned", name _player];
